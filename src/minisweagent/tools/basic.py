@@ -17,44 +17,6 @@ import shlex
 from . import register
 
 
-# @dataclass
-# class ReadFile:
-#     name: str = "read_file"
-#     description: str = "Read a UTF-8 text file."
-#     parameters: dict = field(
-#         default_factory=lambda: {
-#             "type": "object",
-#             "properties": {
-#                 "path": {"type": "string", "description": "Path to the file to read"},
-#             },
-#             "required": ["path"],
-#             "additionalProperties": False,
-#         }
-#     )
-
-#     def __call__(self, args: dict, env=None) -> dict:
-#         path_arg = str(args.get("path", ""))
-#         # If an environment is provided, run inside it so reads happen in the sandbox (e.g., /testbed)
-#         if env is not None:
-#             if not path_arg:
-#                 return {"output": "Missing 'path'", "returncode": 2}
-#             cmd = f"cat -- {shlex.quote(path_arg)}"
-#             return env.execute(cmd)
-#         # Fallback: host filesystem read
-#         try:
-#             p = Path(path_arg).expanduser().resolve()
-#             content = p.read_text(encoding="utf-8", errors="replace")
-#             return {"output": content, "returncode": 0}
-#         except FileNotFoundError:
-#             return {"output": f"File not found: {path_arg}", "returncode": 2}
-#         except IsADirectoryError:
-#             return {"output": f"Is a directory: {path_arg}", "returncode": 21}
-#         except PermissionError:
-#             return {"output": f"Permission denied: {path_arg}", "returncode": 13}
-#         except Exception as e:  # pragma: no cover - generic safety net
-#             return {"output": f"Error reading file: {e}", "returncode": 1}
-
-
 @dataclass
 class ReadFile:
     name: str = "read_file"
@@ -110,56 +72,6 @@ class ReadFile:
         except Exception as e:
             return {"output": f"Error reading file: {e}", "returncode": 1}
 
-# @dataclass
-# class WriteFile:
-#     name: str = "write_file"
-#     description: str = "Write content to a UTF-8 text file, creating parent directories if needed."
-#     parameters: dict = field(
-#         default_factory=lambda: {
-#             "type": "object",
-#             "properties": {
-#                 "path": {"type": "string", "description": "Path to the file to write."},
-#                 "content": {"type": "string", "description": "The text content to write into the file."},
-#             },
-#             "required": ["path", "content"],
-#             "additionalProperties": False,
-#         }
-#     )
-
-#     def __call__(self, args: dict, env=None) -> dict:
-#         path_arg = str(args.get("path", ""))
-#         content_arg = str(args.get("content", ""))
-
-#         if not path_arg:
-#             return {"output": "Missing 'path'", "returncode": 2}
-
-#         # Sandbox execution via environment (Docker/Testbed)
-#         if env is not None:
-#             # We use a shell-safe way to write content. 
-#             # 'cat << 'EOF' > path' is generally safer for multi-line content than 'echo'.
-#             # shlex.quote handles the path, but content needs careful escaping.
-#             quoted_path = shlex.quote(path_arg)
-            
-#             # Ensure the directory exists first in the sandbox
-#             dir_cmd = f"mkdir -p -- $(dirname -- {quoted_path})"
-#             env.execute(dir_cmd)
-
-#             # Write the file using a heredoc to preserve formatting/special characters
-#             write_cmd = f"cat << 'EOF' > {quoted_path}\n{content_arg}\nEOF"
-#             return env.execute(write_cmd)
-
-#         # Fallback: Host filesystem write
-#         try:
-#             p = Path(path_arg).expanduser().resolve()
-#             p.parent.mkdir(parents=True, exist_ok=True)
-#             p.write_text(content_arg, encoding="utf-8")
-#             return {"output": f"Successfully wrote to {path_arg}", "returncode": 0}
-#         except IsADirectoryError:
-#             return {"output": f"Is a directory: {path_arg}", "returncode": 21}
-#         except PermissionError:
-#             return {"output": f"Permission denied: {path_arg}", "returncode": 13}
-#         except Exception as e:
-#             return {"output": f"Error writing file: {e}", "returncode": 1}
 
 @dataclass
 class WriteFile:
@@ -227,7 +139,7 @@ class WriteFile:
 
         except Exception as e:
             return {"output": f"Error writing file: {e}", "returncode": 1}
-            
+
 
 @dataclass
 class SearchFileContent:
