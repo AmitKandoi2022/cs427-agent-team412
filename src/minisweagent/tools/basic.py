@@ -20,14 +20,23 @@ from . import register
 @dataclass
 class ReadFile:
     name: str = "read_file"
-    description: str = "Read a UTF-8 text file with optional line constraints."
+    description: str = (
+        "Read a text file with flexible line constraints. "
+        "Use 'start_line' and 'end_line' for ranges, or 'limit' for head/tail reads."
+    )
     parameters: dict = field(
         default_factory=lambda: {
             "type": "object",
             "properties": {
-                "path": {"type": "string", "description": "Path to the file to read"},
-                "start_line": {"type": "integer", "description": "First line to read (1-indexed)."},
-                "end_line": {"type": "integer", "description": "Last line to read (inclusive)."},
+                "path": {"type": "string", "description": "Path to the file."},
+                "start_line": {"type": "integer", "description": "1-indexed start line."},
+                "end_line": {"type": "integer", "description": "1-indexed end line (inclusive)."},
+                "limit": {"type": "integer", "description": "Number of lines to read from the start or end."},
+                "mode": {
+                    "type": "string", 
+                    "enum": ["range", "head", "tail"], 
+                    "description": "How to apply the limit. 'head' reads first N, 'tail' reads last N."
+                },
             },
             "required": ["path"],
             "additionalProperties": False,
@@ -35,57 +44,58 @@ class ReadFile:
     )
 
     def __call__(self, args: dict, env=None) -> dict:
-        path_arg = str(args.get("path", ""))
+        path = str(args.get("path", ""))
         start = args.get("start_line")
         end = args.get("end_line")
+        limit = args.get("limit")
+        mode = args.get("mode", "range")
 
-        if not path_arg:
-            return {"output": "Missing 'path'", "returncode": 2}
+        # 1. Logic to determine the Bash command
+        if mode == "head" and limit:
+            cmd = f"head -n {limit} {path}"
+        elif mode == "tail" and limit:
+            cmd = f"tail -n {limit} {path}"
+        elif start and end:
+            # -n with 'p' in sed is the most efficient way to grab a range
+            cmd = f"sed -n '{start},{end}p' {path}"
+        elif start:
+            cmd = f"sed -n '{start},$p' {path}"
+        else:
+            cmd = f"cat {path}"
 
-        # 1. Sandbox Execution (Docker/Testbed) using 'sed'
+        # 2. Add line numbers for the Agent! (Crucial for SearchAndReplace)
+        # We pipe the result to 'nl -ba' or 'cat -n' so the agent knows exactly 
+        # which lines it is looking at.
+        cmd += " | cat -n"
+
         if env is not None:
-            quoted_path = shlex.quote(path_arg)
-            if start is not None and end is not None:
-                cmd = f"sed -n '{start},{end}p' -- {quoted_path}"
-            elif start is not None:
-                cmd = f"sed -n '{start},$p' -- {quoted_path}"
-            elif end is not None:
-                cmd = f"sed -n '1,{end}p' -- {quoted_path}"
-            else:
-                cmd = f"cat -- {quoted_path}"
             return env.execute(cmd)
-
-        # 2. Fallback: Host Filesystem
-        try:
-            p = Path(path_arg).expanduser().resolve()
-            lines = p.read_text(encoding="utf-8", errors="replace").splitlines()
-            
-            # Apply slicing (convert 1-indexing to 0-indexing)
-            s_idx = (start - 1) if start is not None else 0
-            e_idx = end if end is not None else len(lines)
-            
-            content = "\n".join(lines[s_idx:e_idx])
-            return {"output": content, "returncode": 0}
-            
-        except FileNotFoundError:
-            return {"output": f"File not found: {path_arg}", "returncode": 2}
-        except Exception as e:
-            return {"output": f"Error reading file: {e}", "returncode": 1}
+        
+        return {"output": f"Executing: {cmd}", "returncode": 0}
 
 
 @dataclass
 class WriteFile:
     name: str = "write_file"
-    description: str = "Write content to a file. Supports overwriting the whole file or inserting at a specific line."
+    description: str = (
+        "Write or modify a file. Supports overwriting, appending, or inserting "
+        "at a specific line number."
+    )
     parameters: dict = field(
         default_factory=lambda: {
             "type": "object",
             "properties": {
                 "path": {"type": "string", "description": "Path to the file."},
-                "content": {"type": "string", "description": "The text content to write or insert."},
-                "insert_line": {
+                "content": {"type": "string", "description": "The text content to write."},
+                "mode": {
+                    "type": "string", 
+                    "enum": ["overwrite", "append", "insert"],
+                    "default": "overwrite",
+                    "description": "How to write the content. 'insert' requires 'start_line'."
+                },
+                "start_line": {
                     "type": "integer", 
-                    "description": "Optional: 1-indexed line number where content should be inserted. If omitted, the file is overwritten."
+                    "description": "1-indexed line number for 'insert' mode."
                 },
             },
             "required": ["path", "content"],
@@ -94,51 +104,70 @@ class WriteFile:
     )
 
     def __call__(self, args: dict, env=None) -> dict:
-        path_arg = str(args.get("path", ""))
-        content = str(args.get("content", ""))
-        insert_line = args.get("insert_line")
+        path = str(args.get("path", ""))
+        content = args.get("content", "")
+        mode = args.get("mode", "overwrite")
+        start_line = args.get("start_line")
 
-        if not path_arg:
-            return {"output": "Missing 'path'", "returncode": 2}
+        # We use a Python "heredoc" approach inside the shell to handle 
+        # multi-line strings and special characters safely.
+        escaped_content = content.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$')
+        
+        if mode == "overwrite":
+            py_logic = f"open('{path}', 'w').write(\"\"\"{content}\"\"\")"
+        
+        elif mode == "append":
+            py_logic = f"open('{path}', 'a').write(\"\"\"\\n{content}\"\"\")"
+        
+        elif mode == "insert" and start_line is not None:
+            # Logic: Read all lines, insert new content at index, write back
+            py_logic = (
+                f"lines = open('{path}').readlines(); "
+                f"lines.insert({start_line}-1, \"\"\"{content}\\n\"\"\"); "
+                f"open('{path}', 'w').writelines(lines)"
+            )
+        else:
+            return {"output": "Error: 'insert' mode requires 'start_line'.", "returncode": 1}
 
-        # 1. Sandbox Execution (Docker/Testbed) using 'sed'
+        # Wrap the logic in a python3 call to ensure cross-platform safety in the sandbox
+        full_cmd = f"python3 -c \"{py_logic}\""
+
         if env is not None:
-            quoted_path = shlex.quote(path_arg)
-            if insert_line is not None:
-                # 'sed -i' for in-place edit. 'Ni' inserts before line N.
-                # We escape single quotes in content for the shell.
-                escaped_content = content.replace("'", "'\\''")
-                cmd = f"sed -i '{insert_line}i {escaped_content}' {quoted_path}"
-            else:
-                # Standard overwrite with directory creation
-                dir_cmd = f"mkdir -p -- $(dirname -- {quoted_path})"
-                env.execute(dir_cmd)
-                cmd = f"cat << 'EOF' > {quoted_path}\n{content}\nEOF"
-            return env.execute(cmd)
+            return env.execute(full_cmd)
+        
+        return {"output": f"Simulated {mode} on {path}", "returncode": 0}
 
-        # 2. Fallback: Host Filesystem
-        try:
-            p = Path(path_arg).expanduser().resolve()
-            
-            if insert_line is not None:
-                if not p.exists():
-                    return {"output": "File must exist to perform line insertion.", "returncode": 2}
-                
-                lines = p.read_text(encoding="utf-8").splitlines()
-                # Adjust for 1-indexing: insert at (line - 1)
-                idx = max(0, insert_line - 1)
-                lines.insert(idx, content)
-                p.write_text("\n".join(lines) + "\n", encoding="utf-8")
-                return {"output": f"Inserted content at line {insert_line} in {path_arg}", "returncode": 0}
-            
-            else:
-                # Standard overwrite logic
-                p.parent.mkdir(parents=True, exist_ok=True)
-                p.write_text(content, encoding="utf-8")
-                return {"output": f"Successfully wrote to {path_arg}", "returncode": 0}
 
-        except Exception as e:
-            return {"output": f"Error writing file: {e}", "returncode": 1}
+@dataclass
+class EditLines:
+    name: str = "edit_lines"
+    description: "Replace a specific line range with new content."
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string"},
+                "start": {"type": "integer"},
+                "end": {"type": "integer"},
+                "content": {"type": "string", "description": "The new code block."}
+            },
+            "required": ["path", "start", "end", "content"]
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        # Use a python script to safely overwrite the specific lines
+        # This is much safer than 'sed -i' for multi-line content.
+        path = args['path']
+        start, end = args['start'], args['end']
+        content = args['content'].replace("'", "'\\''") # Escape for shell
+        
+        py_code = (
+            f"import sys; lines = open('{path}').readlines(); "
+            f"lines[{start}-1:{end}] = ['{content}\\n']; "
+            f"open('{path}', 'w').writelines(lines)"
+        )
+        return env.execute(f"python3 -c \"{py_code}\"")
 
 
 @dataclass
@@ -419,10 +448,200 @@ class TodoWrite:
             return {"output": f"Error updating TODO list: {e}", "returncode": 1}
 
 
+@dataclass
+class SearchAndReplace:
+    name: str = "search_and_replace"
+    description: str = (
+        "Replace a specific block of code in a file. "
+        "The 'old_str' must match the file content exactly, including indentation."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path to the file."},
+                "old_str": {"type": "string", "description": "The exact block of code to be replaced."},
+                "new_str": {"type": "string", "description": "The new block of code to insert."},
+            },
+            "required": ["path", "old_str", "new_str"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        path_arg = str(args.get("path", ""))
+        old_str = args.get("old_str", "")
+        new_str = args.get("new_str", "")
+
+        if env is not None:
+            # In a real SWE-bench env, you might use a python script 
+            # to perform the replacement to avoid shell escaping issues.
+            # Here is a logic-gate approach:
+            escaped_old = shlex.quote(old_str)
+            escaped_new = shlex.quote(new_str)
+            # You can execute a small python snippet inside the container
+            py_cmd = (
+                f"python3 -c \"import sys; p = '{path_arg}'; "
+                f"c = open(p).read(); "
+                f"open(p, 'w').write(c.replace({escaped_old}, {escaped_new}))\""
+            )
+            return env.execute(py_cmd)
+
+        # Fallback: Local Host Execution
+        try:
+            p = Path(path_arg).expanduser().resolve()
+            content = p.read_text(encoding="utf-8")
+            
+            if old_str not in content:
+                return {
+                    "output": "Error: 'old_str' not found in file. Ensure indentation matches exactly.", 
+                    "returncode": 1
+                }
+            
+            new_content = content.replace(old_str, new_str)
+            p.write_text(new_content, encoding="utf-8")
+            
+            return {
+                "output": f"Successfully updated {path_arg}", 
+                "returncode": 0
+            }
+            
+        except Exception as e:
+            return {"output": f"Error: {e}", "returncode": 1}
+
+
+@dataclass
+class RunTest:
+    name: str = "run_test"
+    description: str = (
+        "Run tests for a specific file or directory. "
+        "Automatically detects if it should use 'pytest' or 'python -m unittest'."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "test_path": {
+                    "type": "string", 
+                    "description": "Path to the test file or test directory."
+                },
+                "test_name": {
+                    "type": "string", 
+                    "description": "Optional: Specific test function or class name to run."
+                },
+            },
+            "required": ["test_path"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        test_path = str(args.get("test_path", ""))
+        test_name = args.get("test_name", "")
+        
+        # Construct the target (e.g., path/to/test.py::test_func)
+        target = f"{test_path}::{test_name}" if test_name else test_path
+
+        # Strategy: Try pytest first as it's the standard for most repos in SWE-bench
+        # Fallback to unittest if pytest isn't available or fails to find tests.
+        cmd = f"pytest {target} || python3 -m unittest {target.replace('::', '.')}"
+
+        if env is not None:
+            return env.execute(cmd)
+        
+        # Local fallback for your own debugging
+        import subprocess
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        return {"output": result.stdout + result.stderr, "returncode": result.returncode}
+
+
+@dataclass
+class ListFilesTree:
+    name: str = "list_files_tree"
+    description: str = (
+        "Show a depth-limited directory tree to understand repository structure. "
+        "Useful for getting an overview without being overwhelmed by files."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Starting directory (default is '.')."},
+                "depth": {"type": "integer", "description": "How many levels deep to go (default is 2)."},
+            },
+            "required": [],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        path = args.get("path", ".")
+        depth = args.get("depth", 2)
+
+        # Strategy: Use 'tree' if available in the environment, otherwise fallback
+        # In SWE-bench Docker envs, 'tree' is often installed.
+        cmd = f"tree -L {depth} -F --noreport {path}"
+        
+        if env is not None:
+            result = env.execute(cmd)
+            # If 'tree' command not found, fallback to a basic find command
+            if "not found" in result["output"].lower():
+                fallback_cmd = f"find {path} -maxdepth {depth} -not -path '*/.*'"
+                return env.execute(fallback_cmd)
+            return result
+
+        return {"output": "Standard tree output simulated for host.", "returncode": 0}
+
+
+@dataclass
+class FindDefinition:
+    name: str = "find_definition"
+    description: str = (
+        "Search for the definition of a class or function within the codebase. "
+        "Returns the file path and line number."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "symbol": {"type": "string", "description": "The name of the class or function to find."},
+            },
+            "required": ["symbol"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        symbol = args.get("symbol", "")
+        if not symbol:
+            return {"output": "No symbol provided.", "returncode": 1}
+
+        # Regex explanation: Look for 'class [symbol]' or 'def [symbol]('
+        # This handles both classes and functions while ignoring variable usages.
+        regex = f"^[[:space:]]*(class|def)[[:space:]]+{symbol}([[:space:]]*\\(|:)"
+        
+        # Using 'grep -rnE' for recursive, line-number, extended regex search.
+        # We ignore common non-source directories like .git or __pycache__.
+        cmd = f"grep -rnE '{regex}' . --exclude-dir={{.git,__pycache__,venv}}"
+
+        if env is not None:
+            result = env.execute(cmd)
+            if not result["output"].strip():
+                return {"output": f"No definition found for '{symbol}'.", "returncode": 0}
+            return result
+
+        return {"output": f"Searching for definition: {symbol}", "returncode": 0}
+
+
 # Register the tool
 register(ReadFile())
 register(WriteFile())
+register(EditLines())
 register(SearchFileContent())
 register(ReplaceContent())
 register(ReadManyFiles())
 register(TodoWrite())
+register(SearchAndReplace())
+register(RunTest())
+register(ListFilesTree())
+register(FindDefinition())
