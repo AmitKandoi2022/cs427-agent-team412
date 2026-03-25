@@ -345,7 +345,7 @@ class ReadManyFiles:
             if env is not None:
                 quoted_path = shlex.quote(path_str)
                 # Use a header to separate files in the combined output
-                res = env.execute(f"echo '--- FILE: {path_str} ---' && cat -- {quoted_path} && echo ''")
+                res = env.execute(f"echo '--- FILE: {quoted_path} ---' && cat -- {quoted_path} && echo ''")
                 if res["returncode"] != 0:
                     overall_returncode = res["returncode"]
                 output_segments.append(res["output"])
@@ -578,17 +578,18 @@ class ListFilesTree:
 
     def __call__(self, args: dict, env=None) -> dict:
         path = args.get("path", ".")
+        quoted_path = shlex.quote(path)
         depth = args.get("depth", 2)
 
         # Strategy: Use 'tree' if available in the environment, otherwise fallback
         # In SWE-bench Docker envs, 'tree' is often installed.
-        cmd = f"tree -L {depth} -F --noreport {path}"
+        cmd = f"tree -L {depth} -F --noreport {quoted_path}"
         
         if env is not None:
             result = env.execute(cmd)
             # If 'tree' command not found, fallback to a basic find command
             if "not found" in result["output"].lower():
-                fallback_cmd = f"find {path} -maxdepth {depth} -not -path '*/.*'"
+                fallback_cmd = f"find {quoted_path} -maxdepth {depth} -not -path '*/.*'"
                 return env.execute(fallback_cmd)
             return result
 
