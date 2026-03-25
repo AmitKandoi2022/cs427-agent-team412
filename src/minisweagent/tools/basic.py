@@ -45,6 +45,7 @@ class ReadFile:
 
     def __call__(self, args: dict, env=None) -> dict:
         path = str(args.get("path", ""))
+        quoted_path = shlex.quote(path)
         start = args.get("start_line")
         end = args.get("end_line")
         limit = args.get("limit")
@@ -52,16 +53,16 @@ class ReadFile:
 
         # 1. Logic to determine the Bash command
         if mode == "head" and limit:
-            cmd = f"head -n {limit} {path}"
+            cmd = f"head -n {limit} {quoted_path}"
         elif mode == "tail" and limit:
-            cmd = f"tail -n {limit} {path}"
+            cmd = f"tail -n {limit} {quoted_path}"
         elif start and end:
             # -n with 'p' in sed is the most efficient way to grab a range
-            cmd = f"sed -n '{start},{end}p' {path}"
+            cmd = f"sed -n '{start},{end}p' {quoted_path}"
         elif start:
-            cmd = f"sed -n '{start},$p' {path}"
+            cmd = f"sed -n '{start},$p' {quoted_path}"
         else:
-            cmd = f"cat {path}"
+            cmd = f"cat {quoted_path}"
 
         # 2. Add line numbers for the Agent! (Crucial for SearchAndReplace)
         # We pipe the result to 'nl -ba' or 'cat -n' so the agent knows exactly 
@@ -167,7 +168,8 @@ class EditLines:
             f"lines[{start}-1:{end}] = ['{content}\\n']; "
             f"open('{path}', 'w').writelines(lines)"
         )
-        return env.execute(f"python3 -c \"{py_code}\"")
+        if env is not None:
+            return env.execute(f"python3 -c \"{py_code}\"")
 
 
 @dataclass
@@ -343,7 +345,7 @@ class ReadManyFiles:
             if env is not None:
                 quoted_path = shlex.quote(path_str)
                 # Use a header to separate files in the combined output
-                res = env.execute(f"echo '--- FILE: {path_str} ---' && cat -- {quoted_path} && echo ''")
+                res = env.execute(f"echo '--- FILE: {quoted_path} ---' && cat -- {quoted_path} && echo ''")
                 if res["returncode"] != 0:
                     overall_returncode = res["returncode"]
                 output_segments.append(res["output"])
@@ -576,17 +578,18 @@ class ListFilesTree:
 
     def __call__(self, args: dict, env=None) -> dict:
         path = args.get("path", ".")
+        quoted_path = shlex.quote(path)
         depth = args.get("depth", 2)
 
         # Strategy: Use 'tree' if available in the environment, otherwise fallback
         # In SWE-bench Docker envs, 'tree' is often installed.
-        cmd = f"tree -L {depth} -F --noreport {path}"
+        cmd = f"tree -L {depth} -F --noreport {quoted_path}"
         
         if env is not None:
             result = env.execute(cmd)
             # If 'tree' command not found, fallback to a basic find command
             if "not found" in result["output"].lower():
-                fallback_cmd = f"find {path} -maxdepth {depth} -not -path '*/.*'"
+                fallback_cmd = f"find {quoted_path} -maxdepth {depth} -not -path '*/.*'"
                 return env.execute(fallback_cmd)
             return result
 
