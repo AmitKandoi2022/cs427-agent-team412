@@ -142,7 +142,7 @@ class WriteFile:
 @dataclass
 class EditLines:
     name: str = "edit_lines"
-    description: "Replace a specific line range with new content."
+    description: str = "Replace a specific line range with new content."
     parameters: dict = field(
         default_factory=lambda: {
             "type": "object",
