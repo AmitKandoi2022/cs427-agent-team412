@@ -114,17 +114,18 @@ class WriteFile:
         # multi-line strings and special characters safely.
         escaped_content = content.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$')
         
+        safe_content = repr(content)
+
         if mode == "overwrite":
-            py_logic = f"open('{path}', 'w').write(\"\"\"{content}\"\"\")"
-        
+            py_logic = f"open('{path}', 'w').write({safe_content})"
+
         elif mode == "append":
-            py_logic = f"open('{path}', 'a').write(\"\"\"\\n{content}\"\"\")"
-        
+            py_logic = f"open('{path}', 'a').write('\\n' + {safe_content})"
+
         elif mode == "insert" and start_line is not None:
-            # Logic: Read all lines, insert new content at index, write back
             py_logic = (
                 f"lines = open('{path}').readlines(); "
-                f"lines.insert({start_line}-1, \"\"\"{content}\\n\"\"\"); "
+                f"lines.insert({start_line}-1, {safe_content} + '\\n'); "
                 f"open('{path}', 'w').writelines(lines)"
             )
         else:
