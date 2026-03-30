@@ -112,7 +112,6 @@ class WriteFile:
 
         # We use a Python "heredoc" approach inside the shell to handle 
         # multi-line strings and special characters safely.
-        escaped_content = content.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$')
         
         safe_content = repr(content)
 
@@ -636,6 +635,64 @@ class FindDefinition:
 
         return {"output": f"Searching for definition: {symbol}", "returncode": 0}
 
+@dataclass
+class RunPythonFile:
+    name: str = "run_python_file"
+    description: str = "Run a Python file and return its output."
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "path": {"type": "string", "description": "Path to the Python file to execute."}
+            },
+            "required": ["path"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        path = str(args.get("path", ""))
+
+        if not path:
+            return {"output": "No path provided.", "returncode": 1}
+
+        cmd = f"python3 {shlex.quote(path)}"
+
+        if env is not None:
+            return env.execute(cmd)
+
+        return {"output": f"Simulated run: {cmd}", "returncode": 0}
+
+@dataclass
+class InstallPackage:
+    name: str = "install_package"
+    description: str = "Install a Python package using pip."
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "package": {
+                    "type": "string",
+                    "description": "Name of the Python package to install."
+                }
+            },
+            "required": ["package"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        package = str(args.get("package", "")).strip()
+
+        if not package:
+            return {"output": "No package provided.", "returncode": 1}
+
+        cmd = f"pip install {shlex.quote(package)}"
+
+        if env is not None:
+            return env.execute(cmd)
+
+        return {"output": f"Simulated install: {cmd}", "returncode": 0}
 
 # Register the tool
 register(ReadFile())
@@ -649,3 +706,5 @@ register(SearchAndReplace())
 register(RunTest())
 register(ListFilesTree())
 register(FindDefinition())
+register(RunPythonFile())
+register(InstallPackage())
