@@ -57,5 +57,8 @@ def list_tool_specs() -> list[dict[str, Any]]:
         })
     return specs
 
+# Import tools so they auto-register
+from .search_tool import SearchFileContentTool  # import your tool class
+register(SearchFileContentTool())               # register it
 
 __all__ = ["Tool", "REGISTRY", "register", "list_tool_specs"]
