@@ -51,25 +51,29 @@ class ReadFile:
         limit = args.get("limit")
         mode = args.get("mode", "range")
 
-        # Number the full file first so displayed line numbers always match
-        # the original file line numbers.
-        base_cmd = f"nl -ba {quoted_path}"
-
+        # 1. Logic to determine the Bash command
         if mode == "head" and limit:
-            cmd = f"{base_cmd} | head -n {limit}"
+            cmd = f"head -n {limit} {quoted_path}"
         elif mode == "tail" and limit:
-            cmd = f"{base_cmd} | tail -n {limit}"
+            cmd = f"tail -n {limit} {quoted_path}"
         elif start and end:
-            cmd = f"{base_cmd} | sed -n '{start},{end}p'"
+            # -n with 'p' in sed is the most efficient way to grab a range
+            cmd = f"sed -n '{start},{end}p' {quoted_path}"
         elif start:
-            cmd = f"{base_cmd} | sed -n '{start},$p'"
+            cmd = f"sed -n '{start},$p' {quoted_path}"
         else:
-            cmd = base_cmd
+            cmd = f"cat {quoted_path}"
+
+        # 2. Add line numbers for the Agent! (Crucial for SearchAndReplace)
+        # We pipe the result to 'nl -ba' or 'cat -n' so the agent knows exactly 
+        # which lines it is looking at.
+        cmd += " | cat -n"
 
         if env is not None:
             return env.execute(cmd)
-
+        
         return {"output": f"Executing: {cmd}", "returncode": 0}
+
 
 @dataclass
 class WriteFile:
@@ -108,19 +112,19 @@ class WriteFile:
 
         # We use a Python "heredoc" approach inside the shell to handle 
         # multi-line strings and special characters safely.
+        escaped_content = content.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$')
         
-        safe_content = repr(content)
-
         if mode == "overwrite":
-            py_logic = f"open('{path}', 'w').write({safe_content})"
-
+            py_logic = f"open('{path}', 'w').write(\"\"\"{content}\"\"\")"
+        
         elif mode == "append":
-            py_logic = f"open('{path}', 'a').write('\\n' + {safe_content})"
-
+            py_logic = f"open('{path}', 'a').write(\"\"\"\\n{content}\"\"\")"
+        
         elif mode == "insert" and start_line is not None:
+            # Logic: Read all lines, insert new content at index, write back
             py_logic = (
                 f"lines = open('{path}').readlines(); "
-                f"lines.insert({start_line}-1, {safe_content} + '\\n'); "
+                f"lines.insert({start_line}-1, \"\"\"{content}\\n\"\"\"); "
                 f"open('{path}', 'w').writelines(lines)"
             )
         else:
@@ -138,7 +142,7 @@ class WriteFile:
 @dataclass
 class EditLines:
     name: str = "edit_lines"
-    description: str = "Replace a specific line range with new content."
+    description: "Replace a specific line range with new content."
     parameters: dict = field(
         default_factory=lambda: {
             "type": "object",
@@ -631,64 +635,6 @@ class FindDefinition:
 
         return {"output": f"Searching for definition: {symbol}", "returncode": 0}
 
-@dataclass
-class RunPythonFile:
-    name: str = "run_python_file"
-    description: str = "Run a Python file and return its output."
-    parameters: dict = field(
-        default_factory=lambda: {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string", "description": "Path to the Python file to execute."}
-            },
-            "required": ["path"],
-            "additionalProperties": False,
-        }
-    )
-
-    def __call__(self, args: dict, env=None) -> dict:
-        path = str(args.get("path", ""))
-
-        if not path:
-            return {"output": "No path provided.", "returncode": 1}
-
-        cmd = f"python3 {shlex.quote(path)}"
-
-        if env is not None:
-            return env.execute(cmd)
-
-        return {"output": f"Simulated run: {cmd}", "returncode": 0}
-
-@dataclass
-class InstallPackage:
-    name: str = "install_package"
-    description: str = "Install a Python package using pip."
-    parameters: dict = field(
-        default_factory=lambda: {
-            "type": "object",
-            "properties": {
-                "package": {
-                    "type": "string",
-                    "description": "Name of the Python package to install."
-                }
-            },
-            "required": ["package"],
-            "additionalProperties": False,
-        }
-    )
-
-    def __call__(self, args: dict, env=None) -> dict:
-        package = str(args.get("package", "")).strip()
-
-        if not package:
-            return {"output": "No package provided.", "returncode": 1}
-
-        cmd = f"pip install {shlex.quote(package)}"
-
-        if env is not None:
-            return env.execute(cmd)
-
-        return {"output": f"Simulated install: {cmd}", "returncode": 0}
 
 # Register the tool
 register(ReadFile())
@@ -702,5 +648,3 @@ register(SearchAndReplace())
 register(RunTest())
 register(ListFilesTree())
 register(FindDefinition())
-register(RunPythonFile())
-register(InstallPackage())
