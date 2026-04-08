@@ -71,6 +71,9 @@ agent:
 
     ## Recommended Workflow
     1. Analyze the codebase by finding and reading relevant files
+       - After identifying the likely buggy function or class, **search for all callers and usages** before committing to a fix (`grep_codebase`, `grep -rn`, or similar).
+       - Bugs in object-oriented systems often require changes in callers, middleware, or decorators — not just the definition itself. Do not assume the first file you open is the only file that needs to change.
+       - If a fix in one module seems incomplete, check whether other modules import or wrap that code.
     2. Create a script to reproduce the issue
     3. Edit the source code to resolve the issue
     4. Verify your fix works by running your script again
