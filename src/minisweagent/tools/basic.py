@@ -158,15 +158,38 @@ class EditLines:
         # This is much safer than 'sed -i' for multi-line content.
         path = args['path']
         start, end = args['start'], args['end']
-        content = args['content'].replace("'", "'\\''") # Escape for shell
-        
+        content = args['content']
+        safe_content = repr(content)  # handles all escaping including newlines
+
         py_code = (
-            f"import sys; lines = open('{path}').readlines(); "
-            f"lines[{start}-1:{end}] = ['{content}\\n']; "
+            f"lines = open('{path}').readlines(); "
+            f"n = len(lines); "
+            f"s, e = {start}, {end}; "
+            f"assert 1 <= s <= e <= n, f'line range {{s}}-{{e}} out of bounds (file has {{n}} lines)'; "
+            f"new = [(l if l.endswith('\\n') else l + '\\n') for l in {safe_content}.splitlines()]; "
+            f"lines[s-1:e] = new; "
             f"open('{path}', 'w').writelines(lines)"
         )
+
         if env is not None:
-            return env.execute(f"python3 -c \"{py_code}\"")
+            result = env.execute(f'python3 -c "{py_code}"')
+            if result.get("returncode") == 0:
+                result["output"] = f"Replaced lines {start}-{end} in {path}"
+            return result
+
+        # Host fallback
+        try:
+            p = Path(path).expanduser().resolve()
+            lines = p.read_text(encoding="utf-8").splitlines(keepends=True)
+            n = len(lines)
+            if not (1 <= start <= end <= n):
+                return {"output": f"Error: line range {start}-{end} out of bounds (file has {n} lines)", "returncode": 1}
+            new = [(l if l.endswith('\n') else l + '\n') for l in content.splitlines()]
+            lines[start-1:end] = new
+            p.write_text(''.join(lines), encoding="utf-8")
+            return {"output": f"Replaced lines {start}-{end} in {path}", "returncode": 0}
+        except Exception as e:
+            return {"output": f"Error: {e}", "returncode": 1}
 
 
 @dataclass
