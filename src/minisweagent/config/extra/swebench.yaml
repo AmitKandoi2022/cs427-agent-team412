@@ -67,6 +67,7 @@ agent:
     ## Important Boundaries
     - MODIFY: Regular source code files in /testbed (this is the working directory for all your subsequent commands)
     - DO NOT MODIFY: Tests, configuration files (pyproject.toml, setup.cfg, etc.)
+    - A standalone reproduction script or scratch file alone is not a valid resolution; the fix must include substantive changes to library/source code consistent with the task boundaries above.
 
     ## Recommended Workflow
     1. Analyze the codebase by finding and reading relevant files
@@ -203,13 +204,20 @@ agent:
     anything
     ```
 
+    ## Submission hygiene
+    - Do **not** run `git add -A`, `git add .`, or stage whole directories you did not intentionally change.
+    - Do **not** add documentation or build outputs (e.g. `_build/`, `build/`, `dist/`, `.eggs/`, `htmlcov/`, `node_modules/`) to the patch.
+    - If you **created a new source file** that is part of the fix (untracked), stage **only that path** in an earlier step, e.g. `git add path/to/new_module.py`, then use the submission command below.
+
     ## Submission
-    When you've completed your work (reading, editing, testing), and cannot make further progress
+    When you've completed your work (reading, editing, testing), and cannot make further progress,
     issue exactly the following command:
 
     ```bash
-    echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git add -A && git diff --cached
+    echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff HEAD
     ```
+
+    This prints the required marker and outputs the unified diff of your changes against HEAD (tracked file edits without requiring a blanket `git add -A`). If you added new source files as part of the fix, run `git add <path>` for those files in a **prior** step, then run this submission command.
 
     This command will submit your work.
     You cannot continue working (reading, editing, testing) in any way on this task after submitting.
