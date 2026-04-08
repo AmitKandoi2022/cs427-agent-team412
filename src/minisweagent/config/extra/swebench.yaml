@@ -67,12 +67,11 @@ agent:
     ## Important Boundaries
     - MODIFY: Regular source code files in /testbed (this is the working directory for all your subsequent commands)
     - DO NOT MODIFY: Tests, configuration files (pyproject.toml, setup.cfg, etc.)
-    - A standalone reproduction script or scratch file alone is not a valid resolution; the fix must include substantive changes to library/source code consistent with the task boundaries above.
+    - A standalone reproduction script or scratch file alone is not a valid resolution; the fix must include changes to library/source code that alter runtime behavior to resolve the bug.
 
     ## Recommended Workflow
     1. Analyze the codebase by finding and reading relevant files
-       - After identifying the likely buggy function or class, **search for all callers and usages** before committing to a fix (`grep_codebase`, `grep -rn`, or similar).
-       - Bugs in object-oriented systems often require changes in callers, middleware, or decorators — not just the definition itself. Do not assume the first file you open is the only file that needs to change.
+       - If your candidate fix is a small edit in a single function, **verify completeness**: search for callers and usages of that function (`grep_codebase`, `grep -rn`, or similar) before committing to the fix. Many bugs require coordinated changes across 2-3 call sites, not just the definition.
        - If a fix in one module seems incomplete, check whether other modules import or wrap that code.
     2. Create a script to reproduce the issue
     3. Edit the source code to resolve the issue

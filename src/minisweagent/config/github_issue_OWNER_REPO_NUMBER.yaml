@@ -54,7 +54,7 @@ agent:
     5. Validate using the project's documented test or check commands when practical—not only a single ad-hoc repro—so unrelated behavior is less likely to regress silently.
 
     ## What counts as a complete fix
-    - The resolution must include **substantive changes to the codebase** that address the issue (behavior, APIs, or configuration the project ships), consistent with the issue description.
+    - The resolution must include **changes to library/source code that alter runtime behavior** to address the issue, consistent with the issue description.
     - A **reproduction script, scratch file, or one-off notebook alone** is not sufficient if the issue asks for a product/library fix.
     - Before you finish, you should be confident the change targets the described defect, not only that a local demo script prints the expected output.
 
