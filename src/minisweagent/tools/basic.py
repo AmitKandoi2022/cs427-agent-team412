@@ -154,42 +154,34 @@ class EditLines:
     )
 
     def __call__(self, args: dict, env=None) -> dict:
-        # Use a python script to safely overwrite the specific lines
+        # Use a python script to safely overwrite the specific lines.
         # This is much safer than 'sed -i' for multi-line content.
         path = args['path']
         start, end = args['start'], args['end']
         content = args['content']
-        safe_content = repr(content)  # handles all escaping including newlines
 
         py_code = (
             f"lines = open('{path}').readlines(); "
             f"n = len(lines); "
             f"s, e = {start}, {end}; "
             f"assert 1 <= s <= e <= n, f'line range {{s}}-{{e}} out of bounds (file has {{n}} lines)'; "
-            f"new = [(l if l.endswith('\\n') else l + '\\n') for l in {safe_content}.splitlines()]; "
+            f"new = [(l if l.endswith('\\n') else l + '\\n') for l in {repr(content)}.splitlines()]; "
             f"lines[s-1:e] = new; "
             f"open('{path}', 'w').writelines(lines)"
         )
 
         if env is not None:
             result = env.execute(f'python3 -c "{py_code}"')
-            if result.get("returncode") == 0:
-                result["output"] = f"Replaced lines {start}-{end} in {path}"
-            return result
+        else:
+            try:
+                exec(py_code)
+                result = {"output": "", "returncode": 0}
+            except Exception as e:
+                result = {"output": f"Error: {e}", "returncode": 1}
 
-        # Host fallback
-        try:
-            p = Path(path).expanduser().resolve()
-            lines = p.read_text(encoding="utf-8").splitlines(keepends=True)
-            n = len(lines)
-            if not (1 <= start <= end <= n):
-                return {"output": f"Error: line range {start}-{end} out of bounds (file has {n} lines)", "returncode": 1}
-            new = [(l if l.endswith('\n') else l + '\n') for l in content.splitlines()]
-            lines[start-1:end] = new
-            p.write_text(''.join(lines), encoding="utf-8")
-            return {"output": f"Replaced lines {start}-{end} in {path}", "returncode": 0}
-        except Exception as e:
-            return {"output": f"Error: {e}", "returncode": 1}
+        if result.get("returncode") == 0:
+            result["output"] = f"Replaced lines {start}-{end} in {path}"
+        return result
 
 
 @dataclass
