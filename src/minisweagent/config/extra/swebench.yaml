@@ -75,6 +75,15 @@ agent:
     4. Verify your fix works by running your script again
     5. Test edge cases to ensure your fix is robust
 
+    ## Debugging Guidance
+    Before editing code, try to reproduce the issue or trace the execution path that leads to the incorrect behavior.
+    Confirm that the location you plan to modify is actually responsible for the bug.
+    Avoid patching the first suspicious line without validating the underlying issue.
+
+    ## Framework Consistency Guidance
+    When modifying framework or library code, look for similar logic elsewhere in the codebase and follow existing patterns.
+    Prefer reusing helper methods or abstractions instead of introducing one-off logic.
+
     ## Command Execution Rules
     You are operating in an environment where
     1. You write a single command
@@ -117,6 +126,7 @@ agent:
     - Do NOT try to run multiple independent commands in separate blocks in one response
     - Directory or environment variable changes are not persistent. Every action is executed in a new subshell.
     - However, you can prefix any action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir && ...` or write/load environment variables from files
+    - Prefer reproducing or tracing the bug before editing, and follow existing framework patterns when possible.
 
     Example of a CORRECT response:
     <example_response>
