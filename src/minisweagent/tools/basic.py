@@ -51,29 +51,25 @@ class ReadFile:
         limit = args.get("limit")
         mode = args.get("mode", "range")
 
-        # 1. Logic to determine the Bash command
-        if mode == "head" and limit:
-            cmd = f"head -n {limit} {quoted_path}"
-        elif mode == "tail" and limit:
-            cmd = f"tail -n {limit} {quoted_path}"
-        elif start and end:
-            # -n with 'p' in sed is the most efficient way to grab a range
-            cmd = f"sed -n '{start},{end}p' {quoted_path}"
-        elif start:
-            cmd = f"sed -n '{start},$p' {quoted_path}"
-        else:
-            cmd = f"cat {quoted_path}"
+        # Number the full file first so displayed line numbers always match
+        # the original file line numbers.
+        base_cmd = f"nl -ba {quoted_path}"
 
-        # 2. Add line numbers for the Agent! (Crucial for SearchAndReplace)
-        # We pipe the result to 'nl -ba' or 'cat -n' so the agent knows exactly 
-        # which lines it is looking at.
-        cmd += " | cat -n"
+        if mode == "head" and limit:
+            cmd = f"{base_cmd} | head -n {limit}"
+        elif mode == "tail" and limit:
+            cmd = f"{base_cmd} | tail -n {limit}"
+        elif start and end:
+            cmd = f"{base_cmd} | sed -n '{start},{end}p'"
+        elif start:
+            cmd = f"{base_cmd} | sed -n '{start},$p'"
+        else:
+            cmd = base_cmd
 
         if env is not None:
             return env.execute(cmd)
-        
-        return {"output": f"Executing: {cmd}", "returncode": 0}
 
+        return {"output": f"Executing: {cmd}", "returncode": 0}
 
 @dataclass
 class WriteFile:
