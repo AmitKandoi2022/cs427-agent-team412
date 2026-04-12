@@ -16,6 +16,19 @@ agent:
     # - search_file_content: use this to find relevant code inside files before editing
     {% endif %}
 
+    ## Web Search Usage Guidelines
+    You have access to a web_search tool for retrieving external information.
+
+    Use web_search when:
+    - You do not have appropriate information to understand or resolve an issue related to code, documentation, or syntax
+    - You are unsure how a library, function, or framework works
+
+    Guidelines:
+    - Prefer using web_search instead of guessing when uncertain
+    - Avoid repeating the same query multiple times
+    - Use concise, specific queries (e.g., include error messages or function names)
+    - After receiving results, incorporate them into your reasoning before taking action
+
     <format_example>
     THOUGHT: Your reasoning and analysis here
 
