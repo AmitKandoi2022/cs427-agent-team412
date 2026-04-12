@@ -12,6 +12,8 @@ agent:
     Available tools (name, description, parameters):
     {% for t in tool_specs %}- {{t.name}}: {{t.description}} ({{t.parameters}})
     {% endfor %}
+    # Use tools when appropriate:
+    # - search_file_content: use this to find relevant code inside files before editing
     {% endif %}
 
     <format_example>
