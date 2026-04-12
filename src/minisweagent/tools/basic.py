@@ -13,6 +13,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 import shlex
+import subprocess
 
 from . import register
 
@@ -690,6 +691,54 @@ class InstallPackage:
 
         return {"output": f"Simulated install: {cmd}", "returncode": 0}
 
+@dataclass
+class FileFind:
+    name: str = "file_find"
+    description: str = "Find files by name/glob pattern"
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "pattern": {"type": "string", "description": "Glob pattern to search for"},
+                "path": {"type": "string", "description": "Directory to search from", "default": "."}
+            },
+            "required": ["pattern"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        pattern = str(args.get("pattern", ""))
+        path = str(args.get("path", "."))
+
+        if not pattern:
+            return {"output": "No pattern provided.", "returncode": 1}
+
+        if env is not None:
+            path_q = shlex.quote(path)
+            pattern_q = shlex.quote(pattern)
+            cmd = (
+                f"find {path_q} -name {pattern_q} "
+                f"-not -path '*/.git/*' "
+            )
+            result = env.execute(cmd)
+            if not result["output"].strip():
+                return {"output": f"No files found for pattern: {pattern}", "returncode": 0}
+            return result
+
+        try:
+            p = Path(path).expanduser().resolve()
+            skip_dirs = {".git"}
+            matches = [
+                str(m) for m in p.rglob(pattern)
+                if not any(part in skip_dirs for part in m.parts)
+            ]
+            if not matches:
+                return {"output": f"No files found for pattern: {pattern}", "returncode": 0}
+            return {"output": "\n".join(sorted(matches)), "returncode": 0}
+        except Exception as e:
+            return {"output": f"Error searching for files: {e}", "returncode": 1}
+
 # Register the tool
 register(ReadFile())
 register(WriteFile())
@@ -704,3 +753,4 @@ register(ListFilesTree())
 register(FindDefinition())
 register(RunPythonFile())
 register(InstallPackage())
+register(FileFind())
