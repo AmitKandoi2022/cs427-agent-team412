@@ -154,19 +154,34 @@ class EditLines:
     )
 
     def __call__(self, args: dict, env=None) -> dict:
-        # Use a python script to safely overwrite the specific lines
+        # Use a python script to safely overwrite the specific lines.
         # This is much safer than 'sed -i' for multi-line content.
         path = args['path']
         start, end = args['start'], args['end']
-        content = args['content'].replace("'", "'\\''") # Escape for shell
-        
+        content = args['content']
+
         py_code = (
-            f"import sys; lines = open('{path}').readlines(); "
-            f"lines[{start}-1:{end}] = ['{content}\\n']; "
+            f"lines = open('{path}').readlines(); "
+            f"n = len(lines); "
+            f"s, e = {start}, {end}; "
+            f"assert 1 <= s <= e <= n, f'line range {{s}}-{{e}} out of bounds (file has {{n}} lines)'; "
+            f"new = [(l if l.endswith('\\n') else l + '\\n') for l in {repr(content)}.splitlines()]; "
+            f"lines[s-1:e] = new; "
             f"open('{path}', 'w').writelines(lines)"
         )
+
         if env is not None:
-            return env.execute(f"python3 -c \"{py_code}\"")
+            result = env.execute(f'python3 -c "{py_code}"')
+        else:
+            try:
+                exec(py_code)
+                result = {"output": "", "returncode": 0}
+            except Exception as e:
+                result = {"output": f"Error: {e}", "returncode": 1}
+
+        if result.get("returncode") == 0:
+            result["output"] = f"Replaced lines {start}-{end} in {path}"
+        return result
 
 
 @dataclass
