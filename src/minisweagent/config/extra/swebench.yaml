@@ -209,7 +209,9 @@ agent:
     ## Before submitting
     You must have run at least one command that **executes** your changed code after making your edit — an import check, an existing test, or a repro script. Do not submit based on code inspection alone.
 
-    The evaluator scores your patch against two fixed buckets of tests: one that currently fails and must pass after your fix, and one that currently passes and must still pass (no regressions). Your own repro script does not cover these. Before submitting, run the harness-verification tool if one is available in your toolset, and fix any failures it reports. A green repro is not sufficient evidence that the patch is correct.
+    The evaluator scores your patch against two fixed buckets of tests: one that currently fails and must pass after your fix, and one that currently passes and must still pass (no regressions). Your own repro script does not cover these.
+
+    **Strongly recommended:** Run `run_harness_tests` with `which: "both"` before submitting to check both FAIL_TO_PASS and PASS_TO_PASS buckets. If tests fail, fix the issues and re-run. A passing repro script is not sufficient — the harness covers cases your script likely does not.
 
     ## Submission hygiene
     - Do **not** run `git add -A`, `git add .`, or stage whole directories you did not intentionally change.
