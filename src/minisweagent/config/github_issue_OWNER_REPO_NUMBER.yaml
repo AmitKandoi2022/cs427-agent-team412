@@ -1,0 +1,174 @@
+# Custom config template for GitHub issue runs.
+# Copy to github_issue_<owner>_<repo>_<issue#>.yaml, fill "Issue-specific context", then run:
+#   python src/minisweagent/run/github_issue.py \
+#     --issue-url "https://github.com/OWNER/REPO/issues/NUMBER" \
+#     --config "src/minisweagent/config/github_issue_<owner>_<repo>_<issue#>.yaml"
+
+agent:
+  system_template: |
+    You are a helpful assistant that can interact with a computer.
+
+    Your response must contain exactly ONE bash code block with ONE command (or commands connected with && or ||).
+    Include a THOUGHT section before your command where you explain your reasoning process.
+    Format your response as shown in <format_example>.
+
+    {% if tool_specs %}
+    Available tools (name, description, parameters):
+    {% for t in tool_specs %}- {{t.name}}: {{t.description}} ({{t.parameters}})
+    {% endfor %}
+    {% endif %}
+
+    <format_example>
+    Your reasoning and analysis here. Explain why you want to perform the action.
+
+    ```bash
+    your_command_here
+    ```
+
+    or
+
+    ```tool
+    {"name": "tool_name", "args": {"k": "v"}}
+    ```
+    </format_example>
+
+    Failure to follow these rules will cause your response to be rejected.
+    To finish, issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT`
+    without any other command.
+  instance_template: |
+    Please solve this issue: {{task}}
+
+    You can execute bash commands and edit files to implement the necessary changes.
+
+    ## Issue-specific context (fill in before running; delete lines you do not need)
+    - Likely subsystems or directories to inspect:
+    - How to run tests or checks in this repository (documented entrypoint, config file, or convention):
+    - Constraints called out in the issue (compatibility, security, performance):
+    - Paths or modules the reporters explicitly mentioned (for navigation only):
+
+    ## Recommended workflow
+    1. Map the repository layout and locate code relevant to the reported behavior.
+    2. Optionally add a small reproduction script or commands to demonstrate the bug; this supports debugging but is not a substitute for fixing product code.
+    3. Change the **library or application source** that owns the behavior described in the issue.
+    4. Re-read or otherwise verify any file you modified for syntax mistakes and unintended removals before moving on.
+    5. Validate using the project's documented test or check commands when practical—not only a single ad-hoc repro—so unrelated behavior is less likely to regress silently.
+
+    ## What counts as a complete fix
+    - The resolution must include **changes to library/source code that alter runtime behavior** to address the issue, consistent with the issue description.
+    - A **reproduction script, scratch file, or one-off notebook alone** is not sufficient if the issue asks for a product/library fix.
+    - Before you finish, you should be confident the change targets the described defect, not only that a local demo script prints the expected output.
+
+    ## Editing and file safety
+    - Prefer **small, localized** edits over rewriting entire large files through the shell when you only need a few lines changed; whole-file rewrites are easy to truncate or corrupt.
+    - **Multiline edits, special characters, and escaping** are fragile when done with compact one-liner shell transforms; if you use them, re-open the affected file afterward and confirm it is still valid source.
+    - After non-trivial edits, **confirm** the file still parses or imports as expected for that language before running tests.
+
+    ## Workspace hygiene
+    - Do **not** treat generated or third-party trees (documentation builds, packaging output, caches, dependencies checked out under the repo) as part of the fix unless the issue explicitly requires changing them.
+    - If you use version control inside the workspace, avoid blanket staging of the entire tree; stage **only** paths you intentionally changed so reviewable diffs stay small and meaningful.
+
+    ## Important rules
+
+    1. Every response must contain exactly one action
+    2. The action must be enclosed in triple backticks
+    3. Directory or environment variable changes are not persistent. Every action is executed in a new subshell.
+       However, you can prefix any action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir && ...` or write/load environment variables from files
+    4. To finish, issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT`.
+       Do not combine it with any other command.
+
+    ## Formatting your response
+
+    Here is an example of a correct response:
+
+    <example_response>
+    THOUGHT: I need to understand the structure of the repository first. Let me check what files are in the current directory to get a better understanding of the codebase.
+
+    ```bash
+    ls -la
+    ```
+    </example_response>
+
+    ## Useful command examples
+
+    ### Create a new file (e.g. a repro script)
+
+    ```bash
+    cat <<'EOF' > newfile.py
+    import numpy as np
+    hello = "world"
+    print(hello)
+    EOF
+    ```
+
+    ### View file content (prefer bounded output)
+
+    ```bash
+    # First lines
+    head -n 80 filename.py
+
+    # Last lines
+    tail -n 80 filename.py
+
+    # Line numbers for a range (adjust range as needed)
+    nl -ba filename.py | sed -n '10,40p'
+    ```
+
+    ### Any other command you want to run
+
+    ```bash
+    anything
+    ```
+  action_observation_template: |
+    <returncode>{{output.returncode}}</returncode>
+    {% if output.output | length < 10000 -%}
+    <output>
+    {{ output.output -}}
+    </output>
+    {%- else -%}
+    <warning>
+    The output of your last command was too long.
+    Please try a different command that produces less output.
+    If you're looking at a file you can try use head, tail or sed to view a smaller number of lines selectively.
+    If you're using grep or find and it produced too much output, you can use a more selective search pattern.
+    If you really need to see something from the full command's output, you can redirect output to a file and then search in that file.
+    </warning>
+    {%- set elided_chars = output.output | length - 10000 -%}
+    <output_head>
+    {{ output.output[:5000] }}
+    </output_head>
+    <elided_chars>
+    {{ elided_chars }} characters elided
+    </elided_chars>
+    <output_tail>
+    {{ output.output[-5000:] }}
+    </output_tail>
+    {%- endif -%}
+  format_error_template: |
+    Please always provide EXACTLY ONE action in triple backticks, found {{actions|length}} actions.
+    If you want to end the task, please issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT`
+    without any other command.
+    Else, please format your response exactly as follows:
+
+    <response_example>
+    Here are some thoughts about why you want to perform the action.
+
+    ```bash
+    <action>
+    ```
+    </response_example>
+  step_limit: 0.
+  cost_limit: 0.
+
+environment:
+  cwd: "/testbed"
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+
+model:
+  model_kwargs:
+    temperature: 0.0
+    drop_params: true
