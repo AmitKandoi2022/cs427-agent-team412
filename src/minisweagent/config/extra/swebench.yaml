@@ -206,6 +206,9 @@ agent:
     anything
     ```
 
+    ## Before submitting
+    You must have run at least one command that **executes** your changed code after making your edit — an import check, an existing test, or a repro script. Do not submit based on code inspection alone.
+
     ## Submission hygiene
     - Do **not** run `git add -A`, `git add .`, or stage whole directories you did not intentionally change.
     - Do **not** add documentation or build outputs (e.g. `_build/`, `build/`, `dist/`, `.eggs/`, `htmlcov/`, `node_modules/`) to the patch.
