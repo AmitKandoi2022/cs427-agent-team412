@@ -754,6 +754,69 @@ class FileFind:
         except Exception as e:
             return {"output": f"Error searching for files: {e}", "returncode": 1}
 
+
+@dataclass
+class GrepCodebase:
+    name: str = "grep_codebase"
+    description: str = (
+        "Search for a regex pattern across files in the repo (or a subdirectory). "
+        "Returns matching lines up to max_results to avoid flooding context. "
+        "Use read_file on any result path to see full context around a match."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "pattern": {
+                    "type": "string",
+                    "description": "Regex pattern to search for.",
+                },
+                "path": {
+                    "type": "string",
+                    "description": "Directory or file to search in. Defaults to '.' (repo root).",
+                },
+                "include": {
+                    "type": "string",
+                    "description": "Glob to filter files, e.g. '*.py'. Optional.",
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Maximum number of matching lines to return. Defaults to 50.",
+                },
+            },
+            "required": ["pattern"],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        pattern = str(args.get("pattern", "")).strip()
+        if not pattern:
+            return {"output": "No pattern provided.", "returncode": 1}
+
+        path = str(args.get("path", ".")).strip() or "."
+        include = str(args.get("include", "")).strip()
+        max_results = int(args.get("max_results", 50))
+
+        exclude = "--exclude-dir={.git,__pycache__,venv,.tox,node_modules,.eggs}"
+        include_flag = f"--include={shlex.quote(include)}" if include else ""
+        cmd = (
+            f"grep -rnE {shlex.quote(pattern)} {include_flag} "
+            f"{exclude} {shlex.quote(path)} | head -{max_results}"
+        )
+
+        if env is not None:
+            result = env.execute(cmd)
+        else:
+            import subprocess
+            proc = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+            result = {"output": proc.stdout, "returncode": proc.returncode}
+
+        if result["returncode"] == 1 and not result["output"].strip():
+            return {"output": f"No matches found for pattern: {pattern}", "returncode": 0}
+        return result
+
+
 # Register the tool
 register(ReadFile())
 register(WriteFile())
@@ -769,3 +832,4 @@ register(FindDefinition())
 register(RunPythonFile())
 register(InstallPackage())
 register(FileFind())
+register(GrepCodebase())
