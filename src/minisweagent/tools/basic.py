@@ -103,6 +103,12 @@ class WriteFile:
 
     def __call__(self, args: dict, env=None) -> dict:
         path = str(args.get("path", ""))
+        normalized_path = path.replace("\\", "/")
+        if normalized_path.startswith(("tests/", "./tests/", "/testbed/tests/")):
+            return {
+                "output": "Error: modifying test files is not allowed for this task.",
+                "returncode": 1,
+            }
         content = args.get("content", "")
         mode = args.get("mode", "overwrite")
         start_line = args.get("start_line")
@@ -157,6 +163,12 @@ class EditLines:
         # Use a python script to safely overwrite the specific lines.
         # This is much safer than 'sed -i' for multi-line content.
         path = args['path']
+        normalized_path = str(path_arg).replace("\\", "/")
+        if normalized_path.startswith(("tests/", "./tests/", "/testbed/tests/")):
+            return {
+                "output": "Error: modifying test files is not allowed for this task.",
+                "returncode": 1,
+            }
         start, end = args['start'], args['end']
         content = args['content']
 
@@ -277,6 +289,12 @@ class ReplaceContent:
 
     def __call__(self, args: dict, env=None) -> dict:
         path_arg = str(args.get("path", ""))
+        normalized_path = str(path_arg).replace("\\", "/")
+        if normalized_path.startswith(("tests/", "./tests/", "/testbed/tests/")):
+            return {
+                "output": "Error: modifying test files is not allowed for this task.",
+                "returncode": 1,
+            }
         old_str = args.get("old_str")
         new_str = args.get("new_str")
         diff_patch = args.get("diff")
@@ -484,6 +502,12 @@ class SearchAndReplace:
 
     def __call__(self, args: dict, env=None) -> dict:
         path_arg = str(args.get("path", ""))
+        normalized_path = str(path_arg).replace("\\", "/")
+        if normalized_path.startswith(("tests/", "./tests/", "/testbed/tests/")):
+            return {
+                "output": "Error: modifying test files is not allowed for this task.",
+                "returncode": 1,
+            }
         old_str = args.get("old_str", "")
         new_str = args.get("new_str", "")
 
