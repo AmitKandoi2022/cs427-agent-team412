@@ -51,3 +51,4 @@ This exceeds the required threshold of 21 resolved tasks.
 ## Notes
 
 - All generation traces are included so results can be inspected or reproduced.
+- Since the benchmark was executed in batches due to API rate limits, the included log and exit status files correspond to a representative batch run.
