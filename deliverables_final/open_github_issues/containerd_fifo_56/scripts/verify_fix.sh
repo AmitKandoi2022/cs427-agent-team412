@@ -32,7 +32,7 @@ cd repo
 
 # 4. Apply the patch
 echo "Applying patch..."
-git apply ../../clean_fix.patch
+git apply ../../../fix.patch
 
 # 5. Run verification via Docker
 echo "Starting Docker verification..."

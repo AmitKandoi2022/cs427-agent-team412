@@ -1,5 +1,69 @@
-{
-    "model_name_or_path": "vertex_ai/gemini-2.5-flash",
-    "github issue url": "https://github.com/containerd/fifo/issues/56",
-    "model_patch": "diff --git a/fifo.go b/fifo.go\nindex 0659fbd..140cfb6 100644\n--- a/fifo.go\n+++ b/fifo.go\n@@ -137,35 +137,97 @@ func openFifo(ctx context.Context, fn string, flag int, perm os.FileMode) (*fifo\n \t\t\tdefer wg.Done()\n \t\t}\n \t\tvar file *os.File\n+\t\tvar openErr error\n \t\tfn, err := h.Path()\n \t\tif err == nil {\n-\t\t\tfile, err = os.OpenFile(fn, flag, 0)\n+\t\t\tfile, openErr = os.OpenFile(fn, flag, 0)\n+\t\t} else {\n+\t\t\topenErr = err\n \t\t}\n+\n \t\tselect {\n \t\tcase <-f.closing:\n-\t\t\tif err == nil {\n+\t\t\tif file != nil {\n+\t\t\t\tfile.Close()\n+\t\t\t}\n+\t\t\tif openErr == nil {\n \t\t\t\tselect {\n \t\t\t\tcase <-ctx.Done():\n-\t\t\t\t\terr = ctx.Err()\n+\t\t\t\t\topenErr = ctx.Err()\n \t\t\t\tdefault:\n-\t\t\t\t\terr = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())\n+\t\t\t\t\topenErr = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())\n \t\t\t\t}\n-\t\t\t\tif file != nil {\n-\t\t\t\t\tfile.Close()\n+\t\t\t}\n+\t\t\tf.closedOnce.Do(func() {\n+\t\t\t\tf.err = openErr\n+\t\t\t\tclose(f.closed)\n+\t\t\t})\n+\t\t\treturn\n+\t\tdefault:\n+\t\t}\n+\n+\t\tif openErr != nil {\n+\t\t\tf.closedOnce.Do(func() {\n+\t\t\t\tf.err = openErr\n+\t\t\t\tclose(f.closed)\n+\t\t\t})\n+\t\t\treturn\n+\t\t}\n+\n+\t\tf.file = file\n+\t\tclose(f.opened)\n+\t}()\n+\n+\t\t}\n+\t\tf.file = file\n+\t\tclose(f.opened)\n+\t}()\n+\tgo func() {\n+\t\tif wg != nil {\n+\t\t\tdefer wg.Done()\n+\t\t}\n+\t\tvar file *os.File\n+\t\tvar openErr error\n+\t\tfn, err := h.Path()\n+\t\tif err == nil {\n+\t\t\tfile, openErr = os.OpenFile(fn, flag, 0)\n+\t\t} else {\n+\t\t\topenErr = err\n+\t\t}\n+\n+\t\tselect {\n+\t\tcase <-f.closing:\n+\t\t\tif file != nil {\n+\t\t\t\tfile.Close()\n+\t\t\t}\n+\t\t\tif openErr == nil {\n+\t\t\t\tselect {\n+\t\t\t\tcase <-ctx.Done():\n+\t\t\t\t\topenErr = ctx.Err()\n+\t\t\t\tdefault:\n+\t\t\t\t\topenErr = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())\n \t\t\t\t}\n \t\t\t}\n+\t\t\tf.closedOnce.Do(func() {\n+\t\t\t\tf.err = openErr\n+\t\t\t\tclose(f.closed)\n+\t\t\t})\n+\t\t\treturn\n \t\tdefault:\n \t\t}\n-\t\tif err != nil {\n+\n+\t\tif openErr != nil {\n \t\t\tf.closedOnce.Do(func() {\n-\t\t\t\tf.err = err\n+\t\t\t\tf.err = openErr\n \t\t\t\tclose(f.closed)\n \t\t\t})\n \t\t\treturn\n \t\t}\n+\n \t\tf.file = file\n \t\tclose(f.opened)\n \t}()\n+\n \tif block {\n \t\tselect {\n \t\tcase <-f.opened:\n@@ -227,6 +289,17 @@ func (f *fifo) Close() (retErr error) {\n \t\tdefault:\n \t\t\tselect {\n \t\t\tcase <-f.opened:\n+\t\tif file != nil {\n+\t\t\tf.file = file\n+\t\t\tclose(f.opened)\n+\t\t} else {\n+\t\t\tf.closedOnce.Do(func() {\n+\t\t\t\tf.err = err\n+\t\t\t\tclose(f.closed)\n+\t\t\t})\n+\t\t}\n+\t\treturn\n+\n \t\t\t\tf.closedOnce.Do(func() {\n \t\t\t\t\tretErr = f.file.Close()\n \t\t\t\t\tf.err = retErr\n@@ -253,6 +326,17 @@ func (f *fifo) Close() (retErr error) {\n \t\t\t\t\tif err != nil {\n \t\t\t\t\t\t// Path has become invalid. We will leak a goroutine.\n \t\t\t\t\t\t// This case should not happen in linux.\n+\t\tif file != nil {\n+\t\t\tf.file = file\n+\t\t\tclose(f.opened)\n+\t\t} else {\n+\t\t\tf.closedOnce.Do(func() {\n+\t\t\t\tf.err = err\n+\t\t\t\tclose(f.closed)\n+\t\t\t})\n+\t\t}\n+\t\treturn\n+\n \t\t\t\t\t\tf.closedOnce.Do(func() {\n \t\t\t\t\t\t\tf.err = err\n \t\t\t\t\t\t\tclose(f.closed)\ndiff --git a/fifo_test.go b/fifo_test.go\nindex 5eb50f2..68c4946 100644\n--- a/fifo_test.go\n+++ b/fifo_test.go\n@@ -27,8 +27,47 @@ import (\n \t\"sync\"\n \t\"syscall\"\n \t\"testing\"\n+\t\"go.uber.org/goleak\"\n+\t\"sync\"\n \t\"time\"\n \n+var leakCheckWg *sync.WaitGroup\n+\n+func checkWgDone(wg *sync.WaitGroup) error {\n+\tc := make(chan struct{})\n+\tgo func() {\n+\t\tdefer close(c)\n+\t\twg.Wait()\n+\t}()\n+\tselect {\n+\tcase <-c:\n+\t\treturn nil\n+\tcase <-time.After(5 * time.Second):\n+\t\treturn fmt.Errorf(\"goroutines not done after 5s\")\n+\t}\n+}\n+\n+\n+\n+\t\"time\"\n+\n+var leakCheckWg *sync.WaitGroup\n+\n+func checkWgDone(wg *sync.WaitGroup) error {\n+\tc := make(chan struct{})\n+\tgo func() {\n+\t\tdefer close(c)\n+\t\twg.Wait()\n+\t}()\n+\tselect {\n+\tcase <-c:\n+\t\treturn nil\n+\tcase <-time.After(5 * time.Second):\n+\t\treturn fmt.Errorf(\"goroutines not done after 5s\")\n+\t}\n+}\n+\n+\n \t\"github.com/stretchr/testify/assert\"\n )\n \n@@ -494,3 +533,21 @@ func checkWgDone(wg *sync.WaitGroup) error {\n \t\treturn ctx.Err()\n \t}\n }\n+\n+func TestFifoNocancel(t *testing.T) {\n+\tdefer goleak.VerifyNone(t)\n+\ttmpdir, err := os.MkdirTemp(\"\", \"fifos\")\n+\tassert.NoError(t, err)\n+\tdefer os.RemoveAll(tmpdir)\n+\n+\tleakCheckWg = &sync.WaitGroup{}\n+\tdefer func() {\n+\t\tleakCheckWg = nil\n+\t}()\n+\n+\t//f, err := OpenFifo(context.Background(), filepath.Join(tmpdir, \"f0\"), syscall.O_RDONLY|syscall.O_NONBLOCK, 0600)\n+\tf, err := OpenFifo(context.Background(), filepath.Join(tmpdir, \"f0\"), syscall.O_RDONLY|syscall.O_CREAT|syscall.O_NONBLOCK, 0600)\n+\tassert.Exactly(t, nil, f)\n+\tassert.NotNil(t, err)\n+\tassert.NoError(t, checkWgDone(leakCheckWg))\n+}\n"
-}
+diff --git a/fifo_test.go b/fifo_test.go
+index 5eb50f2..953a00c 100644
+--- a/fifo_test.go
++++ b/fifo_test.go
+@@ -19,6 +19,7 @@
+ package fifo
+ 
+ import (
++	"go.uber.org/goleak"
+ 	"context"
+ 	"fmt"
+ 	"io"
+@@ -479,6 +480,27 @@ func TestFifoWrongRdWrError(t *testing.T) {
+ 	assert.Equal(t, ErrRdFrmWRONLY, err)
+ }
+ 
++func TestFifoNocancel(t *testing.T) {
++	defer goleak.VerifyNone(t)
++	tmpdir, err := os.MkdirTemp("", "fifos")
++	assert.NoError(t, err)
++	defer os.RemoveAll(tmpdir)
++
++	leakCheckWg = &sync.WaitGroup{}
++	defer func() {
++		leakCheckWg = nil
++	}()
++
++	f, err := OpenFifo(context.Background(), filepath.Join(tmpdir, "f0"), syscall.O_RDONLY|syscall.O_CREAT|syscall.O_NONBLOCK, 0600)
++	if f != nil {
++		f.Close()
++	}
++	assert.NotNil(t, f)
++	assert.NoError(t, err)
++	assert.NoError(t, checkWgDone(leakCheckWg))
++}
++
++
+ func checkWgDone(wg *sync.WaitGroup) error {
+ 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+ 	defer cancel()
+diff --git a/go.mod b/go.mod
+index bd36dd6..9b84be0 100644
+--- a/go.mod
++++ b/go.mod
+@@ -10,5 +10,6 @@ require (
+ require (
+ 	github.com/davecgh/go-spew v1.1.1 // indirect
+ 	github.com/pmezard/go-difflib v1.0.0 // indirect
++	go.uber.org/goleak v1.3.0 // indirect
+ 	gopkg.in/yaml.v3 v3.0.1 // indirect
+ )
+diff --git a/go.sum b/go.sum
+index 689fc9b..13be5ae 100644
+--- a/go.sum
++++ b/go.sum
+@@ -10,10 +10,13 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
+ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
+ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
+ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
++go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
++go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
+ golang.org/x/sys v0.5.0 h1:MUK/U/4lj1t1oPg0HfuXDN/Z1wv31ZJ/YcPiGccS4DU=
+ golang.org/x/sys v0.5.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405 h1:yhCVgyC4o1eVCa2tZl7eS0r+SDo693bJlVdllGtEeKM=
+ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
++gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 h1:qIbj1fsPNlZgppZ+VLlY7N33q108Sa+fhmuc+sWQYwY=
+ gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+ gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
+ gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
