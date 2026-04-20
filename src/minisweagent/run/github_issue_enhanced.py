@@ -15,6 +15,7 @@ from minisweagent.models import get_model
 from minisweagent.run.extra.config import configure_if_first_time
 from minisweagent.run.utils.save import save_traj
 from typing import Tuple
+from extract_patch import write_clean_patch
 
 DEFAULT_CONFIG = Path(os.getenv("MSWEA_GITHUB_CONFIG_PATH", builtin_config_dir / "github_issue.yaml"))
 console = Console(highlight=False)
@@ -120,13 +121,14 @@ def main(
         """
             Write fix.patch
         """
-        with open(f"deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch", "w") as outfile:
-            json.dump({
-                "model_name_or_path": "vertex_ai/gemini-2.5-flash",
-                "github issue url": issue_url,
-                "model_patch": result
-                }, outfile, indent=4)
-        print(f"Saved fix.patch to deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch")
+        write_clean_patch(str(result), f"deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch")
+        # with open(f"deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch", "w") as outfile:
+        #     json.dump({
+        #         "model_name_or_path": "vertex_ai/gemini-2.5-flash",
+        #         "github issue url": issue_url,
+        #         "model_patch": result
+        #         }, outfile, indent=4)
+        # print(f"Saved fix.patch to deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch")
     return agent
 
 
