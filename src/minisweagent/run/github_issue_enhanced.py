@@ -6,6 +6,7 @@ import requests
 import typer
 import yaml
 from rich.console import Console
+import json
 
 from minisweagent.agents.interactive import InteractiveAgent
 from minisweagent.config import builtin_config_dir, get_config_path
@@ -116,6 +117,16 @@ def main(
         owner, repo, issue_number = get_owner_repo_issue_number(issue_url)
         output_path = f"deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/traj.json"
         save_traj(agent, Path(output_path), exit_status=exit_status, result=result)
+        """
+            Write fix.patch
+        """
+        with open(f"deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch", "w") as outfile:
+            json.dump({
+                "model_name_or_path": "vertex_ai/gemini-2.5-flash",
+                "github issue url": issue_url,
+                "model_patch": result
+                }, outfile, indent=4)
+        print(f"Saved fix.patch to deliverables_final/open_github_issues/{owner}_{repo}_{issue_number}/fix.patch")
     return agent
 
 

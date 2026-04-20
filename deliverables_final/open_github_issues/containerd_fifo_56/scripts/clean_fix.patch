@@ -1,0 +1,221 @@
+diff --git a/fifo.go b/fifo.go
+index 0659fbd..140cfb6 100644
+--- a/fifo.go
++++ b/fifo.go
+@@ -137,35 +137,97 @@ func openFifo(ctx context.Context, fn string, flag int, perm os.FileMode) (*fifo
+ 			defer wg.Done()
+ 		}
+ 		var file *os.File
++		var openErr error
+ 		fn, err := h.Path()
+ 		if err == nil {
+-			file, err = os.OpenFile(fn, flag, 0)
++			file, openErr = os.OpenFile(fn, flag, 0)
++		} else {
++			openErr = err
+ 		}
++
+ 		select {
+ 		case <-f.closing:
+-			if err == nil {
++			if file != nil {
++				file.Close()
++			}
++			if openErr == nil {
+ 				select {
+ 				case <-ctx.Done():
+-					err = ctx.Err()
++					openErr = ctx.Err()
+ 				default:
+-					err = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())
++					openErr = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())
+ 				}
+-				if file != nil {
+-					file.Close()
++			}
++			f.closedOnce.Do(func() {
++				f.err = openErr
++				close(f.closed)
++			})
++			return
++		default:
++		}
++
++		if openErr != nil {
++			f.closedOnce.Do(func() {
++				f.err = openErr
++				close(f.closed)
++			})
++			return
++		}
++
++		f.file = file
++		close(f.opened)
++	}()
++
++		}
++		f.file = file
++		close(f.opened)
++	}()
++	go func() {
++		if wg != nil {
++			defer wg.Done()
++		}
++		var file *os.File
++		var openErr error
++		fn, err := h.Path()
++		if err == nil {
++			file, openErr = os.OpenFile(fn, flag, 0)
++		} else {
++			openErr = err
++		}
++
++		select {
++		case <-f.closing:
++			if file != nil {
++				file.Close()
++			}
++			if openErr == nil {
++				select {
++				case <-ctx.Done():
++					openErr = ctx.Err()
++				default:
++					openErr = fmt.Errorf(\"fifo %v was closed before opening\", h.Name())
+ 				}
+ 			}
++			f.closedOnce.Do(func() {
++				f.err = openErr
++				close(f.closed)
++			})
++			return
+ 		default:
+ 		}
+-		if err != nil {
++
++		if openErr != nil {
+ 			f.closedOnce.Do(func() {
+-				f.err = err
++				f.err = openErr
+ 				close(f.closed)
+ 			})
+ 			return
+ 		}
++
+ 		f.file = file
+ 		close(f.opened)
+ 	}()
++
+ 	if block {
+ 		select {
+ 		case <-f.opened:
+@@ -227,6 +289,17 @@ func (f *fifo) Close() (retErr error) {
+ 		default:
+ 			select {
+ 			case <-f.opened:
++		if file != nil {
++			f.file = file
++			close(f.opened)
++		} else {
++			f.closedOnce.Do(func() {
++				f.err = err
++				close(f.closed)
++			})
++		}
++		return
++
+ 				f.closedOnce.Do(func() {
+ 					retErr = f.file.Close()
+ 					f.err = retErr
+@@ -253,6 +326,17 @@ func (f *fifo) Close() (retErr error) {
+ 					if err != nil {
+ 						// Path has become invalid. We will leak a goroutine.
+ 						// This case should not happen in linux.
++		if file != nil {
++			f.file = file
++			close(f.opened)
++		} else {
++			f.closedOnce.Do(func() {
++				f.err = err
++				close(f.closed)
++			})
++		}
++		return
++
+ 						f.closedOnce.Do(func() {
+ 							f.err = err
+ 							close(f.closed)
+diff --git a/fifo_test.go b/fifo_test.go
+index 5eb50f2..68c4946 100644
+--- a/fifo_test.go
++++ b/fifo_test.go
+@@ -27,8 +27,47 @@ import (
+ 	\"sync\"
+ 	\"syscall\"
+ 	\"testing\"
++	\"go.uber.org/goleak\"
++	\"sync\"
+ 	\"time\"
+ 
++var leakCheckWg *sync.WaitGroup
++
++func checkWgDone(wg *sync.WaitGroup) error {
++	c := make(chan struct{})
++	go func() {
++		defer close(c)
++		wg.Wait()
++	}()
++	select {
++	case <-c:
++		return nil
++	case <-time.After(5 * time.Second):
++		return fmt.Errorf(\"goroutines not done after 5s\")
++	}
++}
++
++
++
++	\"time\"
++
++var leakCheckWg *sync.WaitGroup
++
++func checkWgDone(wg *sync.WaitGroup) error {
++	c := make(chan struct{})
++	go func() {
++		defer close(c)
++		wg.Wait()
++	}()
++	select {
++	case <-c:
++		return nil
++	case <-time.After(5 * time.Second):
++		return fmt.Errorf(\"goroutines not done after 5s\")
++	}
++}
++
++
+ 	\"github.com/stretchr/testify/assert\"
+ )
+ 
+@@ -494,3 +533,21 @@ func checkWgDone(wg *sync.WaitGroup) error {
+ 		return ctx.Err()
+ 	}
+ }
++
++func TestFifoNocancel(t *testing.T) {
++	defer goleak.VerifyNone(t)
++	tmpdir, err := os.MkdirTemp(\"\", \"fifos\")
++	assert.NoError(t, err)
++	defer os.RemoveAll(tmpdir)
++
++	leakCheckWg = &sync.WaitGroup{}
++	defer func() {
++		leakCheckWg = nil
++	}()
++
++	//f, err := OpenFifo(context.Background(), filepath.Join(tmpdir, \"f0\"), syscall.O_RDONLY|syscall.O_NONBLOCK, 0600)
++	f, err := OpenFifo(context.Background(), filepath.Join(tmpdir, \"f0\"), syscall.O_RDONLY|syscall.O_CREAT|syscall.O_NONBLOCK, 0600)
++	assert.Exactly(t, nil, f)
++	assert.NotNil(t, err)
++	assert.NoError(t, checkWgDone(leakCheckWg))
++}
+
