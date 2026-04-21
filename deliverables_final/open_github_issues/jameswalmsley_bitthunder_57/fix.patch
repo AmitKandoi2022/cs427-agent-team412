@@ -1,0 +1,12 @@
+diff --git a/os/src/bt_main.c b/os/src/bt_main.c
+index 8e8cf747..e4797c6d 100755
+--- a/os/src/bt_main.c
++++ b/os/src/bt_main.c
+@@ -91,6 +91,7 @@ BT_ERROR bt_system_init(BT_HANDLE hThread, void *pParam) {
+ #else
+ 	main(0, NULL);
+ #endif
++    return BT_ERR_NONE;
+ }
+ 
+ int bt_main(BT_u32 machid, const void *fdt) {
