@@ -1,0 +1,28 @@
+diff --git a/src/operators/ai.onnx/Constant/12/prepare_operator__ai_onnx__constant__12.c b/src/operators/ai.onnx/Constant/12/prepare_operator__ai_onnx__constant__12.c
+index c42f79e..76db1ca 100644
+--- a/src/operators/ai.onnx/Constant/12/prepare_operator__ai_onnx__constant__12.c
++++ b/src/operators/ai.onnx/Constant/12/prepare_operator__ai_onnx__constant__12.c
+@@ -17,6 +17,9 @@ prepare_operator__ai_onnx__constant__12(
+ 
+     // Onnx__AttributeProto *a_sparse_value = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"sparse_value");
+     Onnx__AttributeProto *a_value = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"value");
++    if (!a_value) { 
++        return 1; 
++    }
+     // Onnx__AttributeProto *a_value_float = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"value_float");
+     // Onnx__AttributeProto *a_value_floats = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"value_floats");
+     // Onnx__AttributeProto *a_value_int = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"value_int");
+diff --git a/src/operators/ai.onnx/MaxPool/12/prepare_operator__ai_onnx__maxpool__12.c b/src/operators/ai.onnx/MaxPool/12/prepare_operator__ai_onnx__maxpool__12.c
+index f290513..fa665b7 100644
+--- a/src/operators/ai.onnx/MaxPool/12/prepare_operator__ai_onnx__maxpool__12.c
++++ b/src/operators/ai.onnx/MaxPool/12/prepare_operator__ai_onnx__maxpool__12.c
+@@ -24,6 +24,9 @@ prepare_operator__ai_onnx__maxpool__12(
+     // Onnx__AttributeProto *a_ceil_mode = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"ceil_mode");
+     // Onnx__AttributeProto *a_dilations = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"dilations");
+     Onnx__AttributeProto *a_kernel_shape = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"kernel_shape");
++    if (!a_kernel_shape) { 
++        return 1; 
++    }
+     Onnx__AttributeProto *a_pads = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"pads");
+     // Onnx__AttributeProto *a_storage_order = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"storage_order");
+     Onnx__AttributeProto *a_strides = searchAttributeNyName(ctx->onnx_node->n_attribute,ctx->onnx_node->attribute,"strides");
