@@ -1,0 +1,29 @@
+diff --git a/src/libvncserver/main.c b/src/libvncserver/main.c
+index 3387d166..a8ab3e42 100644
+--- a/src/libvncserver/main.c
++++ b/src/libvncserver/main.c
+@@ -31,6 +31,7 @@
+ 
+ #ifdef LIBVNCSERVER_HAVE_SYS_TYPES_H
+ #include <sys/types.h>
++#include <sys/select.h>
+ #endif
+ 
+ #ifdef LIBVNCSERVER_HAVE_FCNTL_H
+@@ -644,8 +645,14 @@ listenerRun(void *data)
+ 	if(screen->listen6Sock != RFB_INVALID_SOCKET)
+ 	  FD_SET(screen->listen6Sock, &listen_fds);
+ #ifndef WIN32
+-	FD_SET(screen->pipe_notify_listener_thread[0], &listen_fds);
+-	screen->maxFd = rfbMax(screen->maxFd, screen->pipe_notify_listener_thread[0]);
++	if (screen->pipe_notify_listener_thread[0] != RFB_INVALID_SOCKET && screen->pipe_notify_listener_thread[0] < FD_SETSIZE) {
++		FD_SET(screen->pipe_notify_listener_thread[0], &listen_fds);
++		screen->maxFd = rfbMax(screen->maxFd, screen->pipe_notify_listener_thread[0]);
++	} else if (screen->pipe_notify_listener_thread[0] != RFB_INVALID_SOCKET) {
++		rfbLog("Listener pipe FD %d is too large for FD_SETSIZE (%d). Disabling pipe notification.", screen->pipe_notify_listener_thread[0], FD_SETSIZE);
++		screen->pipe_notify_listener_thread[0] = RFB_INVALID_SOCKET;
++		screen->pipe_notify_listener_thread[1] = RFB_INVALID_SOCKET;
++	}
+ #endif
+ 
+         tv.tv_sec = 0;
