@@ -841,6 +841,61 @@ class GrepCodebase:
         return result
 
 
+@dataclass
+class RunHarnessTests:
+    name: str = "run_harness_tests"
+    description: str = (
+        "Run the exact tests the SWE-bench evaluator will run (FAIL_TO_PASS and/or PASS_TO_PASS). "
+        "Reads test ids from /testbed/.minisweagent/harness_tests.json. "
+        "Call this before submitting to catch regressions your own repro script may not cover."
+    )
+    parameters: dict = field(
+        default_factory=lambda: {
+            "type": "object",
+            "properties": {
+                "which": {
+                    "type": "string",
+                    "enum": ["fail_to_pass", "pass_to_pass", "both"],
+                    "description": "Which bucket of tests to run. Defaults to 'both'.",
+                },
+            },
+            "required": [],
+            "additionalProperties": False,
+        }
+    )
+
+    def __call__(self, args: dict, env=None) -> dict:
+        which = args.get("which", "both")
+        if env is None:
+            return {"output": "run_harness_tests requires a sandbox environment.", "returncode": 1}
+
+        py = (
+            "import json,sys;"
+            "p='/testbed/.minisweagent/harness_tests.json';"
+            "d=json.load(open(p));"
+            f"w={which!r};"
+            "ids=(d['FAIL_TO_PASS'] if w=='fail_to_pass' else "
+            "d['PASS_TO_PASS'] if w=='pass_to_pass' else "
+            "d['FAIL_TO_PASS']+d['PASS_TO_PASS']);"
+            "sys.stdout.write(' '.join(ids))"
+        )
+        ids_result = env.execute(f'python3 -c "{py}"')
+        if ids_result["returncode"] != 0:
+            return {
+                "output": (
+                    "Could not read /testbed/.minisweagent/harness_tests.json. "
+                    "This tool is only available inside SWE-bench runs.\n"
+                    f"{ids_result.get('output', '')}"
+                ),
+                "returncode": 1,
+            }
+        ids = ids_result["output"].strip()
+        if not ids:
+            return {"output": f"No test ids found for '{which}'.", "returncode": 0}
+
+        return env.execute(f"cd /testbed && pytest -q --tb=short {ids}")
+
+
 # Register the tool
 register(ReadFile())
 register(WriteFile())
@@ -857,3 +912,4 @@ register(RunPythonFile())
 register(InstallPackage())
 register(FileFind())
 register(GrepCodebase())
+register(RunHarnessTests())
