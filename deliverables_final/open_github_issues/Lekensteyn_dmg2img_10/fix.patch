@@ -1,0 +1,39 @@
+diff --git a/adc.c b/adc.c
+index caa3a46..c2152d8 100644
+--- a/adc.c
++++ b/adc.c
+@@ -37,6 +37,9 @@ int adc_decompress(int in_size, unsigned char *input, int avail_size, unsigned c
+ 				output_full = true;
+ 				break;
+ 			}
++                        if (offset + 1 > (outp - output)) {
++                                return -1;
++                        }
+ 			if (offset == 0) {
+ 				memset(outp, *(outp - offset - 1), chunk_size);
+ 				outp += chunk_size;
+@@ -57,6 +60,9 @@ int adc_decompress(int in_size, unsigned char *input, int avail_size, unsigned c
+ 				output_full = true;
+ 				break;
+ 			}
++                        if (offset + 1 > (outp - output)) {
++                                return -1;
++                        }
+ 			if (offset == 0) {
+ 				memset(outp, *(outp - offset - 1), chunk_size);
+ 				outp += chunk_size;
+diff --git a/dmg2img.c b/dmg2img.c
+index 0c1d78f..0f5321c 100644
+--- a/dmg2img.c
++++ b/dmg2img.c
+@@ -633,6 +633,10 @@ int main(int argc, char *argv[])
+ 					}
+ 					int bytes_written;
+ 					int read_from_input = adc_decompress(to_write, tmp, DECODEDSIZE, dtmp, &bytes_written);
++                                    if (read_from_input == -1) {
++                                            fprintf(stderr, "ADC decompression failed due to invalid data.\n");
++                                            return 1;
++                                    }
+ 					if (fwrite(dtmp, 1, bytes_written, FOUT) != bytes_written || ferror(FOUT)) {
+ 						fprintf(stderr, "writing file %s failed: %s\n", output_file, strerror(errno));
+ 						return 1;

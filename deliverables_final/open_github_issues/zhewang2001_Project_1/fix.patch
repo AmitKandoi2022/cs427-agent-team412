@@ -1,0 +1,202 @@
+mkdir -p config/checkstyle && cat <<'EOF' > config/checkstyle/checkstyle.xml
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!-- Checks for Javadoc comments for packages (package-info.java) -->
+    <module name="JavadocPackage"/>
+
+    <module name="TreeWalker">
+        <!-- Enforce Javadoc for public types (classes, interfaces, enums) -->
+        <module name="MissingJavadocType">
+            <property name="scope" value="public"/>
+        </module>
+        <!-- Checks the Javadoc comment for a type -->
+        <module name="JavadocType">
+            <property name="scope" value="public"/>
+        </module>
+
+        <!-- Enforce Javadoc for public methods -->
+        <module name="MissingJavadocMethod">
+            <property name="scope" value="public"/>
+            <!-- Ignore Android lifecycle methods that often don't need extensive Javadoc beyond @Override -->
+            <property name="ignoreMethodPattern" value="^on[A-Z].*$"/>
+        </module>
+        <!-- Checks the Javadoc comment for a method -->
+        <module name="JavadocMethod">
+            <property name="scope" value="public"/>
+            <property name="allowMissingParamTags" value="false"/> <!-- Enforce @param -->
+            <property name="allowMissingReturnTag" value="false"/> <!-- Enforce @return -->
+            <property name="allowMissingThrowsTags" value="false"/> <!-- Enforce @throws -->
+            <property name="allowedAnnotations" value="Override"/> <!-- Allow @Override without full Javadoc, but still check tags if Javadoc is present -->
+        </module>
+
+        <!-- Enforce Javadoc for public fields -->
+        <module name="MissingJavadocVariable">
+            <property name="scope" value="public"/>
+        </module>
+        <!-- Checks the Javadoc comment for a variable -->
+        <module name="JavadocVariable">
+            <property name="scope" value="public"/>
+        </module>
+
+        <!-- Javadoc tag validation rules (at least 10 distinct rules) -->
+        <!-- 1. Checks the order of Javadoc tags. -->
+        <module name="AtclauseOrder">
+            <property name="tagOrder" value="@param, @return, @throws, @see, @since, @deprecated"/>
+        </module>
+        <!-- 2. Checks that Javadoc @param, @return, @throws, and @deprecated tags have a non-empty description. -->
+        <module name="NonEmptyAtclauseDescription"/>
+        <!-- 3. Checks for invalid Javadoc tags. -->
+        <module name="InvalidJavadocTag"/>
+        <!-- 4. Checks that the first sentence of a Javadoc comment ends with a period. -->
+        <module name="SummaryJavadoc">
+            <property name="forbiddenTags" value="@literal, @code"/>
+        </module>
+        <!-- 5. Checks that there is a blank line after the description in Javadoc. -->
+        <module name="JavadocParagraph"/>
+        <!-- 6. Checks that there is an empty line before a block of Javadoc tags. -->
+        <module name="RequireEmptyLineBeforeBlockTagGroup"/>
+        <!-- 7. Checks that there is a whitespace after the leading asterisk in Javadoc comments. -->
+        <module name="JavadocMissingWhitespaceAfterAsterisk"/>
+        <!-- 8. Checks for proper indentation of Javadoc tag continuation lines. -->
+        <module name="JavadocTagContinuationIndentation"/>
+        <!-- 9. Checks for the presence of Javadoc comments for package declarations. (JavadocPackage) -->
+        <!-- 10. Checks for the presence of Javadoc comments for type definitions. (MissingJavadocType) -->
+        <!-- 11. Checks for the presence of Javadoc comments for methods. (MissingJavadocMethod) -->
+        <!-- 12. Checks for the presence of Javadoc comments for variables. (MissingJavadocVariable) -->
+        <!-- 13. Checks for missing @param tags (JavadocMethod with allowMissingParamTags=false) -->
+        <!-- 14. Checks for missing @return tags (JavadocMethod with allowMissingReturnTag=false) -->
+    </module>
+</module>
+EOF
+
+sed -i '/^dependencies {/i \
+\
+checkstyle {\
+    toolVersion '\''8.45.1'\''\
+    configFile file("${rootDir}/config/checkstyle/checkstyle.xml")\
+}\
+' app/build.gradle
+
+python3 -c """
+import re
+
+file_path = 'app/src/main/java/edu/uiuc/cs427app/MainActivity.java'
+
+javadoc_comments = {
+    'class_MainActivity': '''/**
+ * The main activity of the application, responsible for displaying a list of cities
+ * and handling user interactions to navigate to city details or add new locations.
+ */''',
+    'field_appBarConfiguration': '''    /**
+     * Configuration for the app bar, which includes the navigation drawer.
+     */''',
+    'field_binding': '''    /**
+     * View binding instance for accessing views in the activity_main.xml layout.
+     */''',
+    'method_onCreate': '''    /**
+     * Called when the activity is first created. This is where you should do all of your normal static set up:
+     * create views, bind data to lists, etc.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}.
+     *     Note: Otherwise it is null.
+     */''',
+    'method_onClick': '''    /**
+     * Called when a view has been clicked.
+     *
+     * @param view The view that was clicked.
+     */'''
+}
+
+with open(file_path, 'r') as f:
+    content = f.readlines()
+
+new_content = []
+inserted_class_javadoc = False
+inserted_appBarConfiguration_javadoc = False
+inserted_binding_javadoc = False
+inserted_onCreate_javadoc = False
+inserted_onClick_javadoc = False
+
+for line in content:
+    if not inserted_class_javadoc and 'public class MainActivity extends AppCompatActivity implements View.OnClickListener {' in line:
+        new_content.append(javadoc_comments['class_MainActivity'] + '\\n')
+        inserted_class_javadoc = True
+    elif not inserted_appBarConfiguration_javadoc and 'private AppBarConfiguration appBarConfiguration;' in line:
+        new_content.append(javadoc_comments['field_appBarConfiguration'] + '\\n')
+        inserted_appBarConfiguration_javadoc = True
+    elif not inserted_binding_javadoc and 'private ActivityMainBinding binding;' in line:
+        new_content.append(javadoc_comments['field_binding'] + '\\n')
+        inserted_binding_javadoc = True
+    elif not inserted_onCreate_javadoc and 'protected void onCreate(Bundle savedInstanceState) {' in line:
+        new_content.append(javadoc_comments['method_onCreate'] + '\\n')
+        inserted_onCreate_javadoc = True
+    elif not inserted_onClick_javadoc and 'public void onClick(View view) {' in line:
+        new_content.append(javadoc_comments['method_onClick'] + '\\n')
+        inserted_onClick_javadoc = True
+    new_content.append(line)
+
+with open(file_path, 'w') as f:
+    f.writelines(new_content)
+
+print(f'Javadoc comments added to {file_path}')
+"""
+
+python3 -c """
+import re
+
+file_path = 'app/src/main/java/edu/uiuc/cs427app/DetailsActivity.java'
+
+javadoc_comments = {
+    'class_DetailsActivity': '''/**
+ * DetailsActivity displays detailed information about a selected city,
+ * including a welcome message and weather information. It also provides
+ * a button to view the city on a map.
+ */''',
+    'method_onCreate': '''    /**
+     * Called when the activity is first created. This is where you should do all of your normal static set up:
+     * create views, bind data to lists, etc.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after
+     *     previously being shut down then this Bundle contains the data it most
+     *     recently supplied in {@link #onSaveInstanceState}.
+     *     Note: Otherwise it is null.
+     */''',
+    'method_onClick': '''    /**
+     * Called when a view has been clicked.
+     *
+     * @param view The view that was clicked.
+     */'''
+}
+
+with open(file_path, 'r') as f:
+    content = f.readlines()
+
+new_content = []
+inserted_class_javadoc = False
+inserted_onCreate_javadoc = False
+inserted_onClick_javadoc = False
+
+for line in content:
+    if not inserted_class_javadoc and 'public class DetailsActivity extends AppCompatActivity implements View.OnClickListener{' in line:
+        new_content.append(javadoc_comments['class_DetailsActivity'] + '\\n')
+        inserted_class_javadoc = True
+    elif not inserted_onCreate_javadoc and 'protected void onCreate(Bundle savedInstanceState) {' in line:
+        new_content.append(javadoc_comments['method_onCreate'] + '\\n')
+        inserted_onCreate_javadoc = True
+    elif not inserted_onClick_javadoc and 'public void onClick(View view) {' in line:
+        new_content.append(javadoc_comments['method_onClick'] + '\\n')
+        inserted_onClick_javadoc = True
+    new_content.append(line)
+
+with open(file_path, 'w') as f:
+    f.writelines(new_content)
+
+print(f'Javadoc comments added to {file_path}')
+"""
+
