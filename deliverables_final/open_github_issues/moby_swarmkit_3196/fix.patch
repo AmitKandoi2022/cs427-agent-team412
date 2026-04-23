@@ -1,0 +1,14 @@
+diff --git a/manager/state/raft/transport/peer.go b/manager/state/raft/transport/peer.go
+index 7b5efe15..1d3e8d09 100644
+--- a/manager/state/raft/transport/peer.go
++++ b/manager/state/raft/transport/peer.go
+@@ -421,7 +421,7 @@ func (p *peer) run(ctx context.Context) {
+	case m := <-p.msgc:
+		// we do not propagate context here, because this operation should be finished
+		// or timed out for correct raft work.
+-		err := p.sendProcessMessage(context.Background(), m)
++		err := p.sendProcessMessage(ctx, m)
+		if err != nil {
+			log.G(ctx).WithError(err).Debugf(\"failed to send message %s\", m.Type)
+			p.setInactive()
+
