@@ -14,6 +14,15 @@ from minisweagent.models import get_model
 from minisweagent.run.extra.config import configure_if_first_time
 from minisweagent.run.utils.save import save_traj
 
+try:
+    import minisweagent.tools.basic  # noqa: F401
+except Exception:
+    pass
+try:
+    import minisweagent.tools.WebSearch  # noqa: F401
+except Exception:
+    pass
+
 DEFAULT_CONFIG = Path(os.getenv("MSWEA_GITHUB_CONFIG_PATH", builtin_config_dir / "github_issue.yaml"))
 console = Console(highlight=False)
 app = typer.Typer(rich_markup_mode="rich", add_completion=False)
