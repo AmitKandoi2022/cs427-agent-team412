@@ -1,0 +1,120 @@
+agent:
+  system_template: |
+    You control a computer. Each step: THOUGHT, then exactly ONE ```bash``` or ```tool``` block (combine commands with && or ||).
+
+    {% if tool_specs %}
+    Tools:
+    {% for t in tool_specs %}- {{t.name}}: {{t.description}} ({{t.parameters}})
+    {% endfor %}
+    Prefer read_file/write_file/search_and_replace/edit_lines/grep_codebase over raw sed/cat/heredoc for substantive edits.
+    {% endif %}
+
+    After python3 is available in the container: use tools for reading and changing files. Do not use `sed -i`, `cat <<'EOF' ... EOF`, or dumping whole files with `cat`/`nl` for multi-line edits—those flood context. Bash is for apt/install, git, and filtered `mvn`/checks (see task template).
+
+    web_search: use for unfamiliar APIs/libs; one focused query; don't repeat the same query.
+
+    Tool blocks must be valid JSON with exactly two keys: "name" (string) and "args" (object). The runner parses the ```tool``` body with json.loads — no Python syntax like search_file_content(...), no bare {"path": ...} without "name"/"args".
+
+    <format_example>
+    THOUGHT: ...
+
+    ```tool
+    {"name": "read_file", "args": {"path": "pom.xml"}}
+    ```
+
+    Bash is for bootstrap and commands that are not tools (example):
+
+    ```bash
+    apt-get update -qq && apt-get install -y -qq python3
+    ```
+    </format_example>
+  instance_template: |
+    Task: {{task}}
+
+    ## Python3 (required before write_file / edit_lines / search_and_replace)
+    Image `maven:3.9-eclipse-temurin-17` has no python3; tools shell out to python3 (else returncode 127). First step:
+    ```bash
+    apt-get update -qq && apt-get install -y -qq python3
+    ```
+
+    ## Workflow
+    Reproduce error → read files fully → batch edits per file → verify → submit. Non-interactive flags only.
+
+    ## Editing (after python3 is installed)
+    - Use `read_file` / `write_file` / `search_and_replace` / `edit_lines` / `grep_codebase` for real changes.
+    - Reserve `sed`, `cat`, heredocs for emergencies only if tools fail repeatedly—not as the default.
+
+    ## Rules
+    - Exactly one action per turn; subshells don't persist—use `cd /path && ...` or env files as needed.
+    - Multi-step shell: single ```bash``` block with &&/||.
+
+    ## Maven / Checkstyle output (keep traces short — large logs slow the session)
+    Never paste unfiltered Maven or Checkstyle stdout. Pipe and cap aggressively:
+    ```bash
+    mvn validate 2>&1 | grep -E '\[ERROR\]|\[WARN\]|FAILED|Exception' | head -25
+    ```
+    For checkstyle specifically, **prefer ≤25 lines** of violations per run (`head -25`). Fix those, re-run; if still noisy, scope (one module path or one source file) rather than widening output.
+
+    ## Loops / stuck edits
+    Same verifier output 3× → your edits are applied; fix remaining failures only—don't restart from scratch.
+    If line-number `sed` or partial edits keep failing, switch to `write_file` or `search_and_replace` instead of larger shell/heredoc rewrites.
+
+    ## Before submit
+    Run something that executes checks/tests—not inspection alone.
+
+    ## Patch hygiene
+    No `git add -A` / staging unrelated dirs. Don't add build artifacts to the patch. New files: `git add <path>` before submission.
+
+    ## Submission
+    ```bash
+    echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff HEAD
+    ```
+  action_observation_template: |
+    <returncode>{{output.returncode}}</returncode>
+    {% if output.output | length < 10000 -%}
+    <output>
+    {{ output.output -}}
+    </output>
+    {%- else -%}
+    <warning>
+    The output of your last command was too long.
+    Please try a different command that produces less output.
+    If you're looking at a file you can try use head, tail or sed to view a smaller number of lines selectively.
+    If you're using grep or find and it produced too much output, you can use a more selective search pattern.
+    If you really need to see something from the full command's output, you can redirect output to a file and then search in that file.
+    </warning>
+    {%- set elided_chars = output.output | length - 10000 -%}
+    <output_head>
+    {{ output.output[:5000] }}
+    </output_head>
+    <elided_chars>
+    {{ elided_chars }} characters elided
+    </elided_chars>
+    <output_tail>
+    {{ output.output[-5000:] }}
+    </output_tail>
+    {%- endif -%}
+  format_error_template: |
+    Please always provide EXACTLY ONE action in triple backticks, found {{actions|length}} actions.
+    If you want to end the task, please issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff HEAD`
+    without any other command.
+    Else use exactly one ```bash``` block or one ```tool``` block. Tool JSON shape:
+    ```tool
+    {"name": "<tool_name>", "args": { ... }}
+    ```
+  step_limit: 250
+  cost_limit: 3.
+
+environment:
+  image: "maven:3.9-eclipse-temurin-17"
+  cwd: "/testbed"
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+model:
+  model_kwargs:
+    temperature: 0.0
+    drop_params: true
