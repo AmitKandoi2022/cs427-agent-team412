@@ -18,10 +18,6 @@ try:
     import minisweagent.tools.basic  # noqa: F401
 except Exception:
     pass
-try:
-    import minisweagent.tools.WebSearch  # noqa: F401
-except Exception:
-    pass
 
 DEFAULT_CONFIG = Path(os.getenv("MSWEA_GITHUB_CONFIG_PATH", builtin_config_dir / "github_issue.yaml"))
 console = Console(highlight=False)

@@ -1,0 +1,128 @@
+diff --git a/pom.xml b/pom.xml
+index e691062..3724ab3 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -14,21 +14,36 @@
+ 
+ 	<properties>
+ 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+-		<maven.compiler.source>1.8</maven.compiler.source>
+-		<maven.compiler.target>1.8</maven.compiler.target>
++		<maven.compiler.source>17</maven.compiler.source>
++		<maven.compiler.target>17</maven.compiler.target>
+ 	</properties>
+ 
++	<build>
++		<plugins>
++			<plugin>
++				<groupId>org.apache.maven.plugins</groupId>
++				<artifactId>maven-compiler-plugin</artifactId>
++				<version>3.11.0</version> <!-- Latest stable version -->
++				<configuration>
++					<source>17</source>
++					<target>17</target>
++				</configuration>
++			</plugin>
++		</plugins>
++	</build>
++
++
+ 	<dependencies>
+ 		<dependency>
+ 			<groupId>junit</groupId>
+ 			<artifactId>junit</artifactId>
+-			<version>4.11</version>
++			<version>4.13.2</version>
+ 			<scope>test</scope>
+ 		</dependency>
+ 		<dependency>
+ 			<groupId>com.github.javaparser</groupId>
+ 			<artifactId>javaparser-symbol-solver-core</artifactId>
+-			<version>3.24.10</version>
++			<version>3.25.10</version>
+ 		</dependency>
+ 	</dependencies>
+ </project>
+diff --git a/src/main/java/edu/illinois/cs/analysis/CodeGenerator.java b/src/main/java/edu/illinois/cs/analysis/CodeGenerator.java
+index be446af..97e7475 100644
+--- a/src/main/java/edu/illinois/cs/analysis/CodeGenerator.java
++++ b/src/main/java/edu/illinois/cs/analysis/CodeGenerator.java
+@@ -57,14 +57,22 @@ public class CodeGenerator extends VoidVisitorAdapter
+ 			ExpressionStmt varDef1 = new ExpressionStmt(varExpr1);
+ 			body.addStatement(varDef1);
+ 
+-			// TODO: complete this visit function to add the specified toString
+-			// method to the given Java file; we have provided the partial
+-			// implementation to add the method with only one statement: "String
+-			// str = super.toString();" for your reference, and you can complete
+-			// the implementation to include the remaining statements here
++				VariableDeclarator varDec2 = new VariableDeclarator();
++				varDec2.setType("int");
++				varDec2.setName("len");
++				varDec2.setInitializer(new MethodCallExpr(new NameExpr("str"), "length"));
++				VariableDeclarationExpr varExpr2 = new VariableDeclarationExpr(varDec2);
++				ExpressionStmt varDef2 = new ExpressionStmt(varExpr2);
++				body.addStatement(varDef2);
+ 
+-			n.addMethod("toString", Modifier.Keyword.PUBLIC).setType("String")
+-					.addAnnotation(ann).setBody(body);
++				IfStmt ifStmt = new IfStmt();
++				ifStmt.setCondition(new BinaryExpr(new NameExpr("len"), new IntegerLiteralExpr("40"), BinaryExpr.Operator.GREATER));
++				ifStmt.setThenStmt(new ReturnStmt(new StringLiteralExpr("OMITTED")));
++				ifStmt.setElseStmt(new ReturnStmt(new NameExpr("str")));
++				body.addStatement(ifStmt);
++
++				n.addMethod("toString", Modifier.Keyword.PUBLIC).setType("String")
++						.addAnnotation(ann).setBody(body);
+ 		}
+ 	}
+ }
+diff --git a/src/main/java/edu/illinois/cs/analysis/CodeModifier.java b/src/main/java/edu/illinois/cs/analysis/CodeModifier.java
+index 875f2a0..082c995 100644
+--- a/src/main/java/edu/illinois/cs/analysis/CodeModifier.java
++++ b/src/main/java/edu/illinois/cs/analysis/CodeModifier.java
+@@ -20,8 +20,20 @@ public class CodeModifier extends VoidVisitorAdapter
+ 	@Override
+ 	public void visit(BinaryExpr n, Object arg) {
+ 		super.visit(n, arg);
+-		// TODO: complete this visit function to automatically switch the two
+-		// operands for all null checks specified in the homework assignment
++		// Check if one of the operands is a NullLiteralExpr
++		boolean isLeftNull = n.getLeft() instanceof NullLiteralExpr;
++		boolean isRightNull = n.getRight() instanceof NullLiteralExpr;
++
++		if (isLeftNull || isRightNull) {
++			// Check if the operator is EQUALS or NOT_EQUALS
++			if (n.getOperator() == BinaryExpr.Operator.EQUALS || n.getOperator() == BinaryExpr.Operator.NOT_EQUALS) {
++				// Swap the operands
++				Expression originalLeft = n.getLeft();
++				Expression originalRight = n.getRight();
++				n.setLeft(originalRight);
++				n.setRight(originalLeft);
++			}
++		}
+ 	}
+ 
+ 	// The following three visit functions are used to remove all comments to
+diff --git a/src/main/java/edu/illinois/cs/analysis/CodeParser.java b/src/main/java/edu/illinois/cs/analysis/CodeParser.java
+index 2858fcd..a6690c6 100644
+--- a/src/main/java/edu/illinois/cs/analysis/CodeParser.java
++++ b/src/main/java/edu/illinois/cs/analysis/CodeParser.java
+@@ -20,10 +20,12 @@ public class CodeParser extends VoidVisitorAdapter
+ 	public void visit(MethodDeclaration n, Object arg) {
+ 		super.visit(n, arg);
+ 		
+-		// TODO: add your implementation here so that it counts the methods
+-		// satisfying the listed constriants rather than all possible methods
+-		
+-		methNum++;
++		if (n.getModifiers().contains(Modifier.publicModifier()) &&
++			!n.getModifiers().contains(Modifier.staticModifier()) &&
++			!n.getModifiers().contains(Modifier.abstractModifier()) &&
++			n.getType().isVoidType()) {
++			methNum++;
++		}
+ 	}
+ 
+ }
+
