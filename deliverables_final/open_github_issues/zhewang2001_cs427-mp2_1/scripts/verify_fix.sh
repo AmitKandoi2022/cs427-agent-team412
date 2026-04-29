@@ -34,4 +34,11 @@ docker run --rm \
   "${MVN_IMAGE}" \
   mvn --batch-mode checkstyle:check
 
-echo "==> Fix verified: Checkstyle passes with 0 violations."
+echo "==> Verifying Checkstyle is bound to the build lifecycle..."
+docker run --rm \
+  -v "$(pwd):${WORKDIR}" \
+  -w "${WORKDIR}" \
+  "${MVN_IMAGE}" \
+  mvn --batch-mode validate
+
+echo "==> Fix verified: Checkstyle passes with 0 violations and is bound to the build lifecycle."
