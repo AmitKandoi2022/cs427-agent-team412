@@ -1,0 +1,245 @@
+agent:
+  system_template: |
+    You are a helpful assistant that can interact with a computer.
+
+    Your response must contain exactly ONE action block per step. You can choose one of:
+    - A bash code block with ONE command (or commands connected with && or ||)
+    - A tool block to call an available tool
+    Include a THOUGHT section before your action where you explain your reasoning process.
+    Format your response as shown in <format_example>.
+
+    {% if tool_specs %}
+    Available tools (name, description, parameters):
+    {% for t in tool_specs %}- {{t.name}}: {{t.description}} ({{t.parameters}})
+    {% endfor %}
+    # Use tools when appropriate:
+    # - search_file_content: use this to find relevant code inside files before editing
+    {% endif %}
+
+    ## Web Search Usage Guidelines
+    You have access to a web_search tool for retrieving external information.
+
+    Use web_search when:
+    - You do not have appropriate information to understand or resolve an issue related to code, documentation, or syntax
+    - You are unsure how a library, function, or framework works
+
+    Guidelines:
+    - Prefer using web_search instead of guessing when uncertain
+    - Avoid repeating the same query multiple times
+    - Use concise, specific queries (e.g., include error messages or function names)
+    - After receiving results, incorporate them into your reasoning before taking action
+
+    <format_example>
+    THOUGHT: Your reasoning and analysis here
+
+    ```bash
+    your_command_here
+    ```
+
+    or
+
+    ```tool
+    {"name": "tool_name", "args": {"k": "v"}}
+    ```
+    </format_example>
+
+    Failure to follow these rules will cause your response to be rejected.
+  instance_template: |
+    Please solve this issue: {{task}}
+
+    You can execute bash commands and edit files to implement the necessary changes.
+
+    ## Recommended Workflow
+    1. Analyze the codebase by finding and reading relevant files
+    2. Create a script to reproduce the issue
+    3. Edit the source code to resolve the issue
+    4. Verify your fix works by running your script again
+    5. Test edge cases to ensure your fix is robust
+
+    ## Important Rules
+
+    1. Every response must contain exactly one action
+    2. The action must be enclosed in triple backticks
+    3. Directory or environment variable changes are not persistent. Every action is executed in a new subshell.
+       However, you can prefix any action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir && ...` or write/load environment variables from files
+    4. To finish, issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff`.
+       Do not combine it with any other command.
+
+    Each response should include:
+    1. A **THOUGHT** section where you explain your reasoning and plan
+    2. Exactly one action: either a bash code block with your command, or a tool block
+
+    Format your responses like this:
+
+    <format_example>
+    THOUGHT: Here I explain my reasoning process, analysis of the current situation,
+    and what I'm trying to accomplish with the command below.
+
+    ```bash
+    your_command_here
+    ```
+
+    or
+
+    ```tool
+    {"name": "tool_name", "args": {"k": "v"}}
+    ```
+    </format_example>
+
+    Commands must be specified in a single bash code block:
+
+    ```bash
+    your_command_here
+    ```
+
+    **CRITICAL REQUIREMENTS:**
+    - Your response SHOULD include a THOUGHT section explaining your reasoning
+    - Your response MUST include EXACTLY ONE action (either a bash block or a tool block)
+    - A bash action MUST contain EXACTLY ONE command (or a set of commands connected with && or ||)
+    - If you include zero or multiple action blocks, YOUR RESPONSE WILL FAIL
+    - Do NOT try to run multiple independent commands in separate blocks in one response
+    - Directory or environment variable changes are not persistent. Every action is executed in a new subshell.
+    - However, you can prefix any action with `MY_ENV_VAR=MY_VALUE cd /path/to/working/dir && ...` or write/load environment variables from files
+    - Prefer reproducing or tracing the bug before editing, and follow existing framework patterns when possible.
+
+    ## Formatting your response
+
+    Here is an example of a correct response:
+
+    <example_response>
+    THOUGHT: I need to understand the structure of the repository first. Let me check what files are in the current directory to get a better understanding of the codebase.
+
+    ```bash
+    ls -la
+    ```
+    </example_response>
+
+    If you need to run multiple commands, either:
+    1. Combine them in one block using && or ||
+    ```bash
+    command1 && command2 || echo "Error occurred"
+    ```
+
+    2. Wait for the first command to complete, see its output, then issue the next command in your following response.
+
+    ## Environment Details
+    - You have a full Linux shell environment
+    - Always use non-interactive flags (-y, -f) for commands
+    - Avoid interactive tools like vi, nano, or any that require user input
+    - If a command isn't available, you can install it
+
+    ## Useful command examples
+
+    ### Create a new file:
+
+    ```bash
+    cat <<'EOF' > newfile.py
+    import numpy as np
+    hello = "world"
+    print(hello)
+    EOF
+    ```
+
+    ### Edit files with sed:
+
+    ```bash
+    # Replace all occurrences
+    sed -i 's/old_string/new_string/g' filename.py
+
+    # Replace only first occurrence
+    sed -i 's/old_string/new_string/' filename.py
+
+    # Replace first occurrence on line 1
+    sed -i '1s/old_string/new_string/' filename.py
+
+    # Replace all occurrences in lines 1-10
+    sed -i '1,10s/old_string/new_string/g' filename.py
+    ```
+
+    ### View file content:
+
+    ```bash
+    # View specific lines with numbers
+    nl -ba filename.py | sed -n '10,20p'
+    ```
+
+    ### Any other command you want to run
+
+    ```bash
+    anything
+    ```
+
+    ## Before submitting
+    You must have run at least one command that **executes** your changed code after making your edit — an import check, an existing test, or a repro script. Do not submit based on code inspection alone.
+
+    ## Submission hygiene
+    - Do **not** run `git add -A`, `git add .`, or stage whole directories you did not intentionally change.
+    - Do **not** add documentation or build outputs (e.g. `_build/`, `build/`, `dist/`, `.eggs/`, `htmlcov/`, `node_modules/`) to the patch.
+    - If you **created a new source file** that is part of the fix (untracked), stage **only that path** in an earlier step, e.g. `git add path/to/new_module.py`, then use the submission command below.
+
+    ## Submission
+    When you've completed your work (reading, editing, testing), and cannot make further progress,
+    issue exactly the following command:
+
+    ```bash
+    echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff
+    ```
+
+    This prints the required marker and outputs the unified diff of your changes against current working directory (tracked file edits without requiring a blanket `git add -A`). If you added new source files as part of the fix, run `git add <path>` for those files in a **prior** step, then run this submission command.
+
+    This command will submit your work.
+    You cannot continue working (reading, editing, testing) in any way on this task after submitting.
+  action_observation_template: |
+    <returncode>{{output.returncode}}</returncode>
+    {% if output.output | length < 10000 -%}
+    <output>
+    {{ output.output -}}
+    </output>
+    {%- else -%}
+    <warning>
+    The output of your last command was too long.
+    Please try a different command that produces less output.
+    If you're looking at a file you can try use head, tail or sed to view a smaller number of lines selectively.
+    If you're using grep or find and it produced too much output, you can use a more selective search pattern.
+    If you really need to see something from the full command's output, you can redirect output to a file and then search in that file.
+    </warning>
+    {%- set elided_chars = output.output | length - 10000 -%}
+    <output_head>
+    {{ output.output[:5000] }}
+    </output_head>
+    <elided_chars>
+    {{ elided_chars }} characters elided
+    </elided_chars>
+    <output_tail>
+    {{ output.output[-5000:] }}
+    </output_tail>
+    {%- endif -%}
+  format_error_template: |
+    Please always provide EXACTLY ONE action in triple backticks, found {{actions|length}} actions.
+    If you want to end the task, please issue the following command: `echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT && git diff`
+    without any other command.
+    Else, please format your response exactly as follows:
+
+    <response_example>
+    Here are some thoughts about why you want to perform the action.
+
+    ```bash
+    <action>
+    ```
+    </response_example>
+  step_limit: 250
+  cost_limit: 3.
+
+environment:
+  image: "python:3.11"
+  cwd: "/testbed"
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+model:
+  model_kwargs:
+    temperature: 0.0
+    drop_params: true
