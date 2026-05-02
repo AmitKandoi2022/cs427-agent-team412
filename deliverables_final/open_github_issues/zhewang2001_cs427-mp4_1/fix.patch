@@ -1,0 +1,161 @@
+diff --git a/src/test/java/edu/illinois/cs/debugging/SBFLTest.java b/src/test/java/edu/illinois/cs/debugging/SBFLTest.java
+index 1f1bd4d..94071fe 100644
+--- a/src/test/java/edu/illinois/cs/debugging/SBFLTest.java
++++ b/src/test/java/edu/illinois/cs/debugging/SBFLTest.java
+@@ -14,123 +14,60 @@ import java.util.Set;
+ 
+ import org.apache.commons.io.FileUtils;
+ import org.junit.Test;
++import org.junit.runner.RunWith;
++import org.junit.runners.Parameterized;
++import org.junit.runners.Parameterized.Parameters;
+ 
+-/**
+- * Tests for your SBFL implementation
+- *
+- */
++@RunWith(Parameterized.class)
+ public class SBFLTest
+ {
+-
+-    @Test
+-    public void test1() throws FileNotFoundException, IOException, URISyntaxException {
+-        // return coverage information via reading from test resources, which
+-        // will be automatically copied from "src/test/resources/debug-info" to
+-        // "target/test-classes/debug-info" during "mvn test"
+-        Map<String, Set<String>> cov = SBFL
+-            .readXMLCov(getFileFromResource("debug-info/cov.xml"));
+-
+-        // get the list of failed tests from test resources
+-        Set<String> failedTests = new HashSet<String>();
+-        Collections.addAll(failedTests,
+-            FileUtils
+-                .readFileToString(getFileFromResource(
+-                    "debug-info/failedtests1.txt"), "utf-8")
+-                        .split(System.lineSeparator()));
+-
+-        // define the buggy line
+-        String buggyLine = "org.jsoup.parser.HtmlTreeBuilder:432";
+-
+-        // compute suspiciousness for each statement
+-        Map<String, Double> susp = SBFL.Ochiai(cov, failedTests);
+-
+-        // check the suspiciousness value of the buggy line
+-        assertEquals(0.1015346165133619, SBFL.getSusp(susp, buggyLine), 10e-5);
+-        // check the absolute rank of the buggy line
+-        assertEquals(186, SBFL.getRank(susp, buggyLine));
+-    }
+-
+-    @Test
+-    public void test2() throws FileNotFoundException, IOException, URISyntaxException {
+-        Map<String, Set<String>> cov = SBFL
+-            .readXMLCov(getFileFromResource("debug-info/cov.xml"));
+-        Set<String> failedTests = new HashSet<String>();
+-        Collections.addAll(failedTests,
+-            FileUtils
+-                .readFileToString(getFileFromResource(
+-                    "debug-info/failedtests2.txt"), "utf-8")
+-                        .split(System.lineSeparator()));
+-        String buggyLine = "org.jsoup.parser.HtmlTreeBuilderState:768";
+-        Map<String, Double> susp = SBFL.Ochiai(cov, failedTests);
+-        assertEquals(0.14359163172354764, SBFL.getSusp(susp, buggyLine), 10e-5);
++    private String failedTestsFileName;
++    private String buggyLine;
++    private double expectedSuspiciousness;
++    private int expectedRank;
++    private boolean assertRank;
++
++    public SBFLTest(String failedTestsFileName, String buggyLine, double expectedSuspiciousness, int expectedRank, boolean assertRank) {
++        this.failedTestsFileName = failedTestsFileName;
++        this.buggyLine = buggyLine;
++        this.expectedSuspiciousness = expectedSuspiciousness;
++        this.expectedRank = expectedRank;
++        this.assertRank = assertRank;
+     }
+ 
+-    @Test
+-    public void test3() throws FileNotFoundException, IOException, URISyntaxException {
+-        Map<String, Set<String>> cov = SBFL
+-            .readXMLCov(getFileFromResource("debug-info/cov.xml"));
+-        Set<String> failedTests = new HashSet<String>();
+-        Collections.addAll(failedTests,
+-            FileUtils
+-                .readFileToString(getFileFromResource(
+-                    "debug-info/failedtests3.txt"), "utf-8")
+-                        .split(System.lineSeparator()));
+-        String buggyLine = "org.jsoup.parser.TokeniserState:219";
+-        Map<String, Double> susp = SBFL.Ochiai(cov, failedTests);
+-
+-        assertEquals(0.7302967433402215, SBFL.getSusp(susp, buggyLine), 10e-5);
+-        assertEquals(19, SBFL.getRank(susp, buggyLine));
++    @Parameters
++    public static java.util.Collection<Object[]> data() {
++        return java.util.Arrays.asList(new Object[][] {
++            { "debug-info/failedtests1.txt", "org.jsoup.parser.HtmlTreeBuilder:432", 0.1015346165133619, 186, true },
++            { "debug-info/failedtests2.txt", "org.jsoup.parser.HtmlTreeBuilderState:768", 0.14359163172354764, 0, false },
++            { "debug-info/failedtests3.txt", "org.jsoup.parser.TokeniserState:219", 0.7302967433402215, 19, true },
++            { "debug-info/failedtests4.txt", "org.jsoup.parser.HtmlTreeBuilder:451", 0.408248290463863, 19, true },
++            { "debug-info/failedtests5.txt", "org.jsoup.parser.TokeniserState:242", 0.26111648393354675, 0, false }
++        });
+     }
+ 
+     @Test
+-    public void test4() throws FileNotFoundException, IOException, URISyntaxException {
+-        // return coverage information via reading from test resources, which
+-        // will be automatically copied from "src/test/resources/debug-info" to
+-        // "target/test-classes/debug-info" during "mvn test"
++    public void testSBFL() throws FileNotFoundException, IOException, URISyntaxException {
+         Map<String, Set<String>> cov = SBFL
+             .readXMLCov(getFileFromResource("debug-info/cov.xml"));
+ 
+-        // get the list of failed tests from test resources
+         Set<String> failedTests = new HashSet<String>();
+         Collections.addAll(failedTests,
+             FileUtils
+                 .readFileToString(getFileFromResource(
+-                    "debug-info/failedtests4.txt"), "utf-8")
++                    this.failedTestsFileName), "utf-8")
+                         .split(System.lineSeparator()));
+ 
+-        // define the buggy line
+-        String buggyLine = "org.jsoup.parser.HtmlTreeBuilder:451";
+-
+-        // compute suspiciousness for each statement
+         Map<String, Double> susp = SBFL.Ochiai(cov, failedTests);
+ 
+-
+-        // check the suspiciousness value of the buggy line
+-        assertEquals(0.408248290463863, SBFL.getSusp(susp, buggyLine), 10e-5);
+-        // check the absolute rank of the buggy line
+-        assertEquals(19, SBFL.getRank(susp, buggyLine));
+-    }
+-
+-    @Test
+-    public void test5() throws FileNotFoundException, IOException, URISyntaxException {
+-        Map<String, Set<String>> cov = SBFL
+-            .readXMLCov(getFileFromResource("debug-info/cov.xml"));
+-        Set<String> failedTests = new HashSet<String>();
+-        Collections.addAll(failedTests,
+-            FileUtils
+-                .readFileToString(getFileFromResource(
+-                    "debug-info/failedtests5.txt"), "utf-8")
+-                        .split(System.lineSeparator()));
+-        String buggyLine = "org.jsoup.parser.TokeniserState:242";
+-        
+-        Map<String, Double> susp = SBFL.Ochiai(cov, failedTests);
+-
+-        //System.out.println(SBFL.getSusp(susp, buggyLine));
+-        assertEquals(0.26111648393354675, SBFL.getSusp(susp, buggyLine), 10e-5);
++        assertEquals(this.expectedSuspiciousness, SBFL.getSusp(susp, this.buggyLine), 10e-5);
++        if (this.assertRank) {
++            assertEquals(this.expectedRank, SBFL.getRank(susp, this.buggyLine));
++        }
+     }
+ 
+-    private File getFileFromResource(String fileName) throws URISyntaxException {
+-        ClassLoader classLoader = getClass().getClassLoader();
++    private static File getFileFromResource(String fileName) throws URISyntaxException {
++        ClassLoader classLoader = SBFLTest.class.getClassLoader();
+         URL resource = classLoader.getResource(fileName);
+         if (resource == null) {
+             throw new IllegalArgumentException("file not found! " + fileName);
