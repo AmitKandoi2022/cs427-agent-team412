@@ -3,6 +3,7 @@
 """Run mini-SWE-agent on SWE-bench instances in batch mode."""
 # Read this first: https://mini-swe-agent.com/latest/usage/swebench/  (usage docs)
 
+import base64
 import concurrent.futures
 import json
 import random
@@ -126,6 +127,35 @@ def get_swebench_docker_image_name(instance: dict) -> str:
     return image_name
 
 
+def _parse_test_ids(value) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return [str(v) for v in value]
+    try:
+        parsed = json.loads(value)
+    except (TypeError, ValueError):
+        return []
+    return [str(v) for v in parsed] if isinstance(parsed, list) else []
+
+
+def write_harness_tests_file(env: Environment, instance: dict) -> None:
+    """Write FAIL_TO_PASS / PASS_TO_PASS ids to /testbed/.minisweagent/harness_tests.json."""
+    payload = {
+        "FAIL_TO_PASS": _parse_test_ids(instance.get("FAIL_TO_PASS")),
+        "PASS_TO_PASS": _parse_test_ids(instance.get("PASS_TO_PASS")),
+    }
+    encoded = base64.b64encode(json.dumps(payload).encode("utf-8")).decode("ascii")
+    cmd = (
+        "mkdir -p /testbed/.minisweagent && "
+        f"python3 -c \"import base64,sys; "
+        f"open('/testbed/.minisweagent/harness_tests.json','wb').write(base64.b64decode('{encoded}'))\""
+    )
+    out = env.execute(cmd)
+    if out["returncode"] != 0:
+        logger.warning(f"Failed to write harness_tests.json: {out.get('output', '')}")
+
+
 def get_sb_environment(config: dict, instance: dict) -> Environment:
     env_config = config.setdefault("environment", {})
     env_config["environment_class"] = env_config.get("environment_class", "docker")
@@ -191,6 +221,7 @@ def process_instance(
 
     try:
         env = get_sb_environment(config, instance)
+        write_harness_tests_file(env, instance)
         agent = ProgressTrackingAgent(
             model,
             env,

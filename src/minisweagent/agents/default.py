@@ -21,21 +21,7 @@ class AgentConfig:
         "{% if tool_specs %}Available tools:\n"
         "{% for t in tool_specs %}- {{t.name}}: {{t.description}} (parameters: {{t.parameters}})\n{% endfor %}{% endif %}"
     )
-    system_template: str = (
-        "You are a helpful assistant that can do anything.\n"
-        "If tools are available, you may call exactly one per step.\n"
-        "{% if tool_specs %}Available tools:\n"
-        "{% for t in tool_specs %}- {{t.name}}: {{t.description}} (parameters: {{t.parameters}})\n{% endfor %}{% endif %}"
-    )
     instance_template: str = (
-        "Your task: {{task}}. Provide EXACTLY ONE action in triple backticks.\n"
-        "Choose one of:\n"
-        "1) Bash command:\n"
-        "```bash\n<your command>\n```\n"
-        "2) Tool call:\n"
-        "```tool\n{\"name\": \"<tool_name>\", \"args\": { ... }}\n```\n"
-        "Prefer tools for reading/writing files or similar operations.\n"
-        "To finish, ensure the first line of the resulting output is 'COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT'."
         "Your task: {{task}}. Provide EXACTLY ONE action in triple backticks.\n"
         "Choose one of:\n"
         "1) Bash command:\n"
@@ -49,9 +35,6 @@ class AgentConfig:
         "The last command <command>{{action['action']}}</command> timed out and has been killed.\n"
         "The output of the command was:\n <output>\n{{output}}\n</output>\n"
         "Please try another command and make sure to avoid those requiring interactive input."
-    )
-    format_error_template: str = (
-        "Please always provide EXACTLY ONE action in triple backticks: either a ```bash``` block or a ```tool``` block."
     )
     format_error_template: str = (
         "Please always provide EXACTLY ONE action in triple backticks: either a ```bash``` block or a ```tool``` block."
@@ -215,37 +198,6 @@ class DefaultAgent:
 
         # Fallback: bash (original behavior)
         return {"kind": "bash", "action": bash_blocks[0].strip(), **response}
-        """Parse a single action: either a bash block or a tool block.
-
-        Tool syntax:
-            ```tool
-            {"name": "read_file", "args": {"path": "..."}}
-            ```
-        Bash syntax (existing):
-            ```bash
-            echo hello
-            ```
-        """
-        content = response["content"]
-        tool_blocks = re.findall(r"```tool\n(.*?)\n```", content, re.DOTALL)
-        bash_blocks = re.findall(r"```bash\n(.*?)\n```", content, re.DOTALL)
-
-        if len(tool_blocks) + len(bash_blocks) != 1:
-            raise FormatError(self.render_template(self.config.format_error_template, actions=[]))
-
-        if tool_blocks:
-            import json
-
-            try:
-                payload = json.loads(tool_blocks[0].strip())
-                name = payload["name"]
-                args = payload.get("args", {})
-                return {"kind": "tool", "tool_name": name, "tool_args": args, **response}
-            except Exception as e:  # noqa: BLE001
-                raise FormatError(f"Invalid tool payload: {e}")
-
-        # Fallback: bash (original behavior)
-        return {"kind": "bash", "action": bash_blocks[0].strip(), **response}
 
     def execute_action(self, action: dict) -> dict:
         # Dispatch tool calls if present; otherwise, execute bash as before
@@ -262,21 +214,6 @@ class DefaultAgent:
                     output = tool(action.get("tool_args", {}), self.env)  # type: ignore[misc]
                 except TypeError:
                     output = tool(action.get("tool_args", {}))  # type: ignore[call-arg]
-            except Exception as e:  # noqa: BLE001
-                output = {"output": f"Tool '{tool_name}' error: {e}", "returncode": 1}
-            self.has_finished(output)
-            return output
-
-        # Dispatch tool calls if present; otherwise, execute bash as before
-        if action.get("kind") == "tool":
-            tool_name = action.get("tool_name", "")
-            tool = self.tools.get(tool_name)
-            if not tool:
-                output = {"output": f"Unknown tool: {tool_name}", "returncode": 127}
-                self.has_finished(output)
-                return output
-            try:
-                output = tool(action.get("tool_args", {}))
             except Exception as e:  # noqa: BLE001
                 output = {"output": f"Tool '{tool_name}' error: {e}", "returncode": 1}
             self.has_finished(output)
