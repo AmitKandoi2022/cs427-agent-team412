@@ -1,0 +1,22 @@
+agent:
+  system_template: "You are a helpful assistant that can interact with a computer.\n\nYour response must contain exactly ONE bash code block with ONE command (or commands connected with && or ||).\nInclude a THOUGHT section before your command where you explain your reasoning.\n\nTo finish: echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT without any other command.\n"
+  instance_template: "Please solve this issue: {{task}}\n\nYou are fixing impacket issue 1902. The repo is at /testbed.\n\nFirst install impacket: cd /testbed && pip install -e . -q\n\nThen fix these three files:\n\nFILE 1: /testbed/impacket/IP6.py\nIn class IP6 __init__, after self.load_header(buffer), add:\n  version = self.get_ip_v()\n  if version != 6:\n    raise ImpactPacketException('Invalid IPv6: version=%d' % version)\n\nFILE 2: /testbed/impacket/dhcp.py\nIn class BootpPacket __init__, after structure.Structure.__init__, add:\n  if data is not None:\n    op = self['op']\n    if op not in (1, 2): raise Exception('Invalid op: %d' % op)\n    htype = self['htype']\n    if htype <= 0: raise Exception('Invalid htype: %d' % htype)\n    hlen = self['hlen']\n    if hlen > 16: raise Exception('Invalid hlen: %d' % hlen)\n\nFILE 3: /testbed/impacket/ImpactPacket.py\nIn class TCP __init__, before Header.__init__, add:\n  if aBuffer:\n    if len(aBuffer) < 20: raise ImpactPacketException('TCP too short')\n    doff = (aBuffer[12] >> 4) & 0xF\n    if doff < 5 or doff > 15: raise ImpactPacketException('Bad DataOffset')\n    if len(aBuffer) < 4*doff: raise ImpactPacketException('TCP truncated')\n    if aBuffer[12] & 0x0F != 0: raise ImpactPacketException('Reserved!=0')\n\nAfter fixing, run: cd /testbed && python -m pytest tests/ImpactPacket/ -v\n\nThen verify with a test script named /testbed/verify.py that tests all three fixes.\n\nDo NOT use heredoc syntax (cat << EOF). Instead write files using Python:\npython3 -c \"open('filename','w').write('content')\"\nor use sed to edit existing files.\n"
+  action_observation_template: "<returncode>{{output.returncode}}</returncode>\n{% if output.output | length < 10000 %}<output>\n{{ output.output }}\n</output>{% else %}<warning>Output too long.</warning><output_head>\n{{ output.output[:5000] }}\n</output_head><output_tail>\n{{ output.output[-5000:] }}\n</output_tail>{% endif %}"
+  format_error_template: "Provide EXACTLY ONE action in triple backticks, found {{actions|length}} actions.\nTo end: echo COMPLETE_TASK_AND_SUBMIT_FINAL_OUTPUT\n"
+  step_limit: 0.
+  cost_limit: 0.
+
+environment:
+  image: "python:3.11"
+  cwd: "/testbed"
+  env:
+    PAGER: cat
+    MANPAGER: cat
+    LESS: -R
+    PIP_PROGRESS_BAR: 'off'
+    TQDM_DISABLE: '1'
+
+model:
+  model_kwargs:
+    temperature: 0.0
+    drop_params: true
