@@ -1,0 +1,214 @@
+diff --git a/app/src/main/java/edu/uiuc/cs427app/DetailsActivity.java b/app/src/main/java/edu/uiuc/cs427app/DetailsActivity.java
+index 9de661f..e529408 100644
+--- a/app/src/main/java/edu/uiuc/cs427app/DetailsActivity.java
++++ b/app/src/main/java/edu/uiuc/cs427app/DetailsActivity.java
+@@ -19,8 +19,8 @@ public class DetailsActivity extends AppCompatActivity implements View.OnClickLi
+ 
+         // Process the Intent payload that has opened this Activity and show the information accordingly
+         String cityName = getIntent().getStringExtra("city").toString();
+-        String welcome = "Welcome to the "+cityName;
+-        String cityWeatherInfo = "Detailed information about the weather of "+cityName;
++        String welcome = getString(R.string.welcome_message, cityName);
++        String cityWeatherInfo = getString(R.string.city_weather_info, cityName);
+ 
+         // Initializing the GUI elements
+         TextView welcomeMessage = findViewById(R.id.welcomeText);
+diff --git a/app/src/main/java/edu/uiuc/cs427app/MainActivity.java b/app/src/main/java/edu/uiuc/cs427app/MainActivity.java
+index 6203ce2..9686f22 100644
+--- a/app/src/main/java/edu/uiuc/cs427app/MainActivity.java
++++ b/app/src/main/java/edu/uiuc/cs427app/MainActivity.java
+@@ -44,15 +44,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
+         int id = view.getId();
+         if (id == R.id.buttonChampaign) {
+             intent = new Intent(this, DetailsActivity.class);
+-            intent.putExtra("city", "Champaign");
++            intent.putExtra("city", getString(R.string.city_champaign));
+             startActivity(intent);
+         } else if (id == R.id.buttonChicago) {
+             intent = new Intent(this, DetailsActivity.class);
+-            intent.putExtra("city", "Chicago");
++            intent.putExtra("city", getString(R.string.city_chicago));
+             startActivity(intent);
+         } else if (id == R.id.buttonLA) {
+             intent = new Intent(this, DetailsActivity.class);
+-            intent.putExtra("city", "Los Angeles");
++            intent.putExtra("city", getString(R.string.city_los_angeles));
+             startActivity(intent);
+         } else if (id == R.id.buttonAddLocation) {
+             // Implement this action to add a new location to the list of locations
+diff --git a/app/src/main/res/layout/activity_details.xml b/app/src/main/res/layout/activity_details.xml
+index b543922..d0a6171 100644
+--- a/app/src/main/res/layout/activity_details.xml
++++ b/app/src/main/res/layout/activity_details.xml
+@@ -28,6 +28,6 @@
+             android:id="@+id/mapButton"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+-            android:text="Show Map" />
++            android:text="@string/show_map" />
+     </LinearLayout>
+ </androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+diff --git a/app/src/main/res/layout/activity_main.xml b/app/src/main/res/layout/activity_main.xml
+index c319be4..6085af4 100644
+--- a/app/src/main/res/layout/activity_main.xml
++++ b/app/src/main/res/layout/activity_main.xml
+@@ -17,13 +17,13 @@
+             android:id="@+id/textView3"
+             android:layout_width="match_parent"
+             android:layout_height="50dp"
+-            android:text="CS427 Project App" />
++            android:text="@string/app_title" />
+ 
+         <TextView
+             android:id="@+id/textView4"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+-            android:text="List of Locations" />
++            android:text="@string/list_of_locations" />
+ 
+         <TextView
+             android:id="@+id/textView5"
+@@ -40,14 +40,14 @@
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Champaign" />
++                android:text="@string/city_champaign" />
+ 
+             <Button
+                 android:id="@+id/buttonChampaign"
+                 android:layout_width="45dp"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Show Details" />
++                android:text="@string/show_details" />
+         </LinearLayout>
+ 
+         <LinearLayout
+@@ -60,14 +60,14 @@
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Chicago" />
++                android:text="@string/city_chicago" />
+ 
+             <Button
+                 android:id="@+id/buttonChicago"
+                 android:layout_width="25dp"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Show Details" />
++                android:text="@string/show_details" />
+         </LinearLayout>
+ 
+         <LinearLayout
+@@ -80,14 +80,14 @@
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Los Angeles" />
++                android:text="@string/city_los_angeles" />
+ 
+             <Button
+                 android:id="@+id/buttonLA"
+                 android:layout_width="52dp"
+                 android:layout_height="wrap_content"
+                 android:layout_weight="1"
+-                android:text="Show Details" />
++                android:text="@string/show_details" />
+         </LinearLayout>
+ 
+         <TextView
+@@ -99,7 +99,7 @@
+             android:id="@+id/buttonAddLocation"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+-            android:text="Add a location" />
++            android:text="@string/add_a_location" />
+ 
+     </LinearLayout>
+ </androidx.constraintlayout.widget.ConstraintLayout>
+\ No newline at end of file
+diff --git a/app/src/main/res/values-es/strings.xml b/app/src/main/res/values-es/strings.xml
+new file mode 100644
+index 0000000..e28764e
+--- /dev/null
++++ b/app/src/main/res/values-es/strings.xml
+@@ -0,0 +1,14 @@
++<resources>
++    <string name="app_name">CS427App</string>
++    <string name="city_champaign">Champaign</string>
++    <string name="city_chicago">Chicago</string>
++    <string name="city_los_angeles">Los Ángeles</string>
++    <string name="add_location">Añadir Ubicación</string>
++    <string name="welcome_message">Bienvenido a %s</string>
++    <string name="city_weather_info">Información detallada sobre el clima de %s</string>
++    <string name="app_title">Aplicación del Proyecto CS427</string>
++    <string name="list_of_locations">Lista de Ubicaciones</string>
++    <string name="show_details">Mostrar Detalles</string>
++    <string name="add_a_location">Añadir una ubicación</string>
++    <string name="show_map">Mostrar Mapa</string>
++</resources>
+diff --git a/app/src/main/res/values-hi/strings.xml b/app/src/main/res/values-hi/strings.xml
+new file mode 100644
+index 0000000..a4d6591
+--- /dev/null
++++ b/app/src/main/res/values-hi/strings.xml
+@@ -0,0 +1,14 @@
++<resources>
++    <string name="app_name">CS427App</string>
++    <string name="city_champaign">शैम्पेन</string>
++    <string name="city_chicago">शिकागो</string>
++    <string name="city_los_angeles">लॉस एंजिल्स</string>
++    <string name="add_location">स्थान जोड़ें</string>
++    <string name="welcome_message">आपका स्वागत है %s में</string>
++    <string name="city_weather_info">%s के मौसम के बारे में विस्तृत जानकारी</string>
++    <string name="app_title">CS427 प्रोजेक्ट ऐप</string>
++    <string name="list_of_locations">स्थानों की सूची</string>
++    <string name="show_details">विवरण दिखाएं</string>
++    <string name="add_a_location">एक स्थान जोड़ें</string>
++    <string name="show_map">नक्शा दिखाएं</string>
++</resources>
+diff --git a/app/src/main/res/values-zh-rCN/strings.xml b/app/src/main/res/values-zh-rCN/strings.xml
+new file mode 100644
+index 0000000..8f9a080
+--- /dev/null
++++ b/app/src/main/res/values-zh-rCN/strings.xml
+@@ -0,0 +1,14 @@
++<resources>
++    <string name="app_name">CS427App</string>
++    <string name="city_champaign">香槟</string>
++    <string name="city_chicago">芝加哥</string>
++    <string name="city_los_angeles">洛杉矶</string>
++    <string name="add_location">添加地点</string>
++    <string name="welcome_message">欢迎来到 %s</string>
++    <string name="city_weather_info">%s 的详细天气信息</string>
++    <string name="app_title">CS427 项目应用</string>
++    <string name="list_of_locations">地点列表</string>
++    <string name="show_details">显示详情</string>
++    <string name="add_a_location">添加一个地点</string>
++    <string name="show_map">显示地图</string>
++</resources>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 6e55e64..8a7b59d 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,3 +1,14 @@
+ <resources>
+-    <string name="app_name">Team #</string>
+-</resources>
+\ No newline at end of file
++    <string name="app_name">CS427App</string>
++    <string name="city_champaign">Champaign</string>
++    <string name="city_chicago">Chicago</string>
++    <string name="city_los_angeles">Los Angeles</string>
++    <string name="add_location">Add Location</string>
++    <string name="welcome_message">Welcome to the %s</string>
++    <string name="city_weather_info">Detailed information about the weather of %s</string>
++    <string name="app_title">CS427 Project App</string>
++    <string name="list_of_locations">List of Locations</string>
++    <string name="show_details">Show Details</string>
++    <string name="add_a_location">Add a location</string>
++    <string name="show_map">Show Map</string>
++</resources>
