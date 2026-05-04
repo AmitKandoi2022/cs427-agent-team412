@@ -1,0 +1,6 @@
+instances_by_exit_status:
+    Submitted:
+    - django__django-15554
+    - django__django-15863
+    - django__django-15987
+    - django__django-16136

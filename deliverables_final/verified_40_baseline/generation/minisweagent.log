@@ -1,0 +1,175 @@
+2026-05-03 09:36:15,924 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 09:36:16,944 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 09:36:16,945 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 09:36:18,147 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-36b9b166 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-10880:latest sleep 2h
+2026-05-03 09:36:19,637 - minisweagent.environment - INFO - Started container minisweagent-36b9b166 with ID a882cc402d8f5df4a2ea486ce0d9d64b5fb1b2536ffb0c861f4e851c46618920
+2026-05-03 09:36:35,342 - minisweagent - INFO - Cancelling all pending jobs. Press ^C again to exit immediately.
+2026-05-03 09:38:41,685 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 09:38:42,871 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 09:38:42,872 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 09:38:43,756 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-ae9f1af2 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-10880:latest sleep 2h
+2026-05-03 09:38:43,868 - minisweagent.environment - INFO - Started container minisweagent-ae9f1af2 with ID 7ae4b98eef1f1d7a2f4631d332b0e68dcd421aa841b2fcac62461a1e43584912
+2026-05-03 09:43:58,830 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-10880/django__django-10880.traj.json'
+2026-05-03 09:43:58,842 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-03cd5105 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-11095:latest sleep 2h
+2026-05-03 09:43:58,979 - minisweagent.environment - INFO - Started container minisweagent-03cd5105 with ID 7b587e960bd7b014581b3bd1f726c4332ce37c86b4a546d8929f218d803545bc
+2026-05-03 10:06:38,396 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-11095/django__django-11095.traj.json'
+2026-05-03 10:06:38,401 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-468c2624 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-11333:latest sleep 2h
+2026-05-03 10:06:38,510 - minisweagent.environment - INFO - Started container minisweagent-468c2624 with ID d8eb3b52ae17fb52b81a4c30ed066ac58f7ab0ac9c30377a605875a4db9e16ff
+2026-05-03 10:07:18,692 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-11333/django__django-11333.traj.json'
+2026-05-03 10:07:18,704 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-54cb1fe8 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-11532:latest sleep 2h
+2026-05-03 10:07:18,837 - minisweagent.environment - INFO - Started container minisweagent-54cb1fe8 with ID b057cbacaf26c5da8c99b26ac97e848565e66cc951d9241b8f0e719bbe5660ec
+2026-05-03 10:08:05,835 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-11532/django__django-11532.traj.json'
+2026-05-03 10:08:05,847 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-bfa4ebde -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-11880:latest sleep 2h
+2026-05-03 10:08:05,958 - minisweagent.environment - INFO - Started container minisweagent-bfa4ebde with ID 80d67a254b6c5d49c5a66effe317d229fcfac243732dc6da5db4d5724bd75cda
+2026-05-03 10:19:51,953 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-11880/django__django-11880.traj.json'
+2026-05-03 10:20:24,981 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 10:20:26,146 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 10:20:26,147 - minisweagent - INFO - Skipping 5 existing instances
+2026-05-03 10:20:26,147 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 10:20:26,902 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-f452d42b -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-13089:latest sleep 2h
+2026-05-03 10:20:27,017 - minisweagent.environment - INFO - Started container minisweagent-f452d42b with ID 3818df5bfdadc742524c842a6781f6e72881a1f60b24e49cdb656b9cc676c2a4
+2026-05-03 10:21:23,540 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-13089/django__django-13089.traj.json'
+2026-05-03 10:21:23,554 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-e5137691 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-13363:latest sleep 2h
+2026-05-03 10:21:23,675 - minisweagent.environment - INFO - Started container minisweagent-e5137691 with ID 42701a30eded4ee54f4fc8377b873dd841e15e2976806b68000dce573b14a3bc
+2026-05-03 10:32:38,037 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-13363/django__django-13363.traj.json'
+2026-05-03 10:32:38,042 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-2e4855e1 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-13417:latest sleep 2h
+2026-05-03 10:32:38,160 - minisweagent.environment - INFO - Started container minisweagent-2e4855e1 with ID 4a6c26e21c156b37053443319fb21ce79dedf7ba656d6ac4c1df4a1e06a59451
+2026-05-03 10:34:38,237 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-13417/django__django-13417.traj.json'
+2026-05-03 10:34:38,250 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-2799b980 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-14007:latest sleep 2h
+2026-05-03 10:34:38,370 - minisweagent.environment - INFO - Started container minisweagent-2799b980 with ID 55a18d6cba92dc6e603334f14cd5c17f5b01620e526da400b79673a40791aed7
+2026-05-03 10:39:27,385 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-14007/django__django-14007.traj.json'
+2026-05-03 10:39:27,399 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-1a2f2a9d -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-14017:latest sleep 2h
+2026-05-03 10:39:27,525 - minisweagent.environment - INFO - Started container minisweagent-1a2f2a9d with ID a2d84741879e9328e335fba153d1d17e4b101f18fee935791a7abe2c1c79f927
+2026-05-03 11:15:50,476 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-14017/django__django-14017.traj.json'
+2026-05-03 11:17:29,414 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 11:17:31,204 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 11:17:31,204 - minisweagent - INFO - Skipping 10 existing instances
+2026-05-03 11:17:31,205 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 11:17:32,016 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-b5d74064 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-14725:latest sleep 2h
+2026-05-03 11:17:32,123 - minisweagent.environment - INFO - Started container minisweagent-b5d74064 with ID 3badb183b2f01d0aeeaadd31ad3336a4886d9798a45ad917c077bf05b3930279
+2026-05-03 11:18:12,327 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-14725/django__django-14725.traj.json'
+2026-05-03 11:18:12,342 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-a927b61c -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-14855:latest sleep 2h
+2026-05-03 11:18:12,465 - minisweagent.environment - INFO - Started container minisweagent-a927b61c with ID 2209a225a00501041a40cc1536aca2264947bf72d3bc5eae9d3d65ca153a55ec
+2026-05-03 11:18:24,254 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-14855/django__django-14855.traj.json'
+2026-05-03 11:18:24,268 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-c2246ad5 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15103:latest sleep 2h
+2026-05-03 11:18:24,393 - minisweagent.environment - INFO - Started container minisweagent-c2246ad5 with ID fd1674944f940102536e9857b42b9f515f393abbd81dc0b3fa0ccdc4a1003eef
+2026-05-03 11:19:10,284 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15103/django__django-15103.traj.json'
+2026-05-03 11:19:10,299 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-f6c94331 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15315:latest sleep 2h
+2026-05-03 11:19:10,414 - minisweagent.environment - INFO - Started container minisweagent-f6c94331 with ID a0583ffcef619c463077ffc5bc95798431d03dfbb5c8583603598dc3ce6e4ea7
+2026-05-03 11:19:27,242 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15315/django__django-15315.traj.json'
+2026-05-03 11:19:27,256 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-9b6fe77b -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15368:latest sleep 2h
+2026-05-03 11:19:27,412 - minisweagent.environment - INFO - Started container minisweagent-9b6fe77b with ID 6dffd896bfc40d2603e720522fbc38fe92b4ba241177b8e463b59316f89bee49
+2026-05-03 11:31:25,117 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15368/django__django-15368.traj.json'
+2026-05-03 11:31:37,541 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 11:31:38,799 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 11:31:38,800 - minisweagent - INFO - Skipping 15 existing instances
+2026-05-03 11:31:38,800 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 11:31:39,529 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-95c728de -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15554:latest sleep 2h
+2026-05-03 11:31:39,639 - minisweagent.environment - INFO - Started container minisweagent-95c728de with ID c25e27d17a546fbc2db957a4ec8999c41e37b13160f98e53318128bb4932e847
+2026-05-03 11:33:05,068 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15554/django__django-15554.traj.json'
+2026-05-03 11:33:05,081 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-1c38b21f -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15863:latest sleep 2h
+2026-05-03 11:33:05,211 - minisweagent.environment - INFO - Started container minisweagent-1c38b21f with ID bac4a4b1b5e7d52e61652a3e557e1db1d7c97028b3a5912b97cf508e80f77315
+2026-05-03 11:34:52,740 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15863/django__django-15863.traj.json'
+2026-05-03 11:34:52,751 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-722b7376 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-15987:latest sleep 2h
+2026-05-03 11:34:52,863 - minisweagent.environment - INFO - Started container minisweagent-722b7376 with ID d342619717048b7fd62bd3d098643e95388dcd0aba368c66e5b21b19542bb039
+2026-05-03 11:35:04,988 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-15987/django__django-15987.traj.json'
+2026-05-03 11:35:05,001 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-2ab9e7da -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16136:latest sleep 2h
+2026-05-03 11:35:05,120 - minisweagent.environment - INFO - Started container minisweagent-2ab9e7da with ID afd12eeac8099cc1486dd67f7694b65d2eb00edeefbbc1e5d80de5b1ff2fa907
+2026-05-03 11:35:24,605 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-16136/django__django-16136.traj.json'
+2026-05-03 11:35:24,617 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-9b27f540 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16560:latest sleep 2h
+2026-05-03 11:35:24,735 - minisweagent.environment - INFO - Started container minisweagent-9b27f540 with ID efac1d46fba6b685044ac6e0053a39bb9189e0f8dbb433c465f8442870b42f8b
+2026-05-03 12:34:12,390 - minisweagent - INFO - Cancelling all pending jobs. Press ^C again to exit immediately.
+2026-05-03 12:34:44,624 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 12:34:45,778 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 12:34:45,779 - minisweagent - INFO - Skipping 19 existing instances
+2026-05-03 12:34:45,779 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 12:34:46,541 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-fba35a12 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16642:latest sleep 2h
+2026-05-03 12:34:46,677 - minisweagent.environment - INFO - Started container minisweagent-fba35a12 with ID ae247c8839a2942ee10db02067d0d9d3671db18a2c5765b04adf4af98704904b
+2026-05-03 12:36:54,316 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-16642/django__django-16642.traj.json'
+2026-05-03 12:36:54,328 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-5d1d0770 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16661:latest sleep 2h
+2026-05-03 12:36:54,458 - minisweagent.environment - INFO - Started container minisweagent-5d1d0770 with ID 51a394397f3b2f1c8137a711c54268b42ff1431d5a1bafe07d2964bd44572dc7
+2026-05-03 12:48:25,053 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-16661/django__django-16661.traj.json'
+2026-05-03 12:48:25,067 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-fc4231d4 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.psf_1776_requests-2317:latest sleep 2h
+2026-05-03 12:48:25,196 - minisweagent.environment - INFO - Started container minisweagent-fc4231d4 with ID 0dc43eab1038a5371d64851d70fa80543dc0a1135c7e0eeacdae2ac8c8e7d14f
+2026-05-03 12:59:59,984 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/psf__requests-2317/psf__requests-2317.traj.json'
+2026-05-03 12:59:59,997 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-571cc12e -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pydata_1776_xarray-6461:latest sleep 2h
+2026-05-03 13:00:00,132 - minisweagent.environment - INFO - Started container minisweagent-571cc12e with ID 95c93ddc92a95b36d007f3ad0bd476b4ef471bef3b581202cdaa72a31462d1dd
+2026-05-03 13:26:29,180 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/pydata__xarray-6461/pydata__xarray-6461.traj.json'
+2026-05-03 13:26:29,191 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-ef29cc6c -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pydata_1776_xarray-6992:latest sleep 2h
+2026-05-03 13:26:29,312 - minisweagent.environment - INFO - Started container minisweagent-ef29cc6c with ID f94c78e2e4257485b080e797f318d14859dcbc8afae460d490455b1c9b4d5d1e
+2026-05-03 13:27:12,981 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/pydata__xarray-6992/pydata__xarray-6992.traj.json'
+2026-05-03 13:33:12,831 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 13:33:14,194 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 13:33:14,195 - minisweagent - INFO - Skipping 24 existing instances
+2026-05-03 13:33:14,195 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 13:33:14,959 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-3b339714 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pylint-dev_1776_pylint-4661:latest sleep 2h
+2026-05-03 13:33:15,111 - minisweagent.environment - INFO - Started container minisweagent-3b339714 with ID 862541b076dc32a23d45d1b1253b3c14455bf4aed04887aff26229f42cab99b5
+2026-05-03 13:33:31,981 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/pylint-dev__pylint-4661/pylint-dev__pylint-4661.traj.json'
+2026-05-03 13:33:31,998 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-44e260dd -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-5809:latest sleep 2h
+2026-05-03 13:33:32,148 - minisweagent.environment - INFO - Started container minisweagent-44e260dd with ID c0c861556f0352273f5ffec0ad4b25730a9906f035d0ee99ee1c1ef9766bea33
+2026-05-03 13:34:13,161 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/pytest-dev__pytest-5809/pytest-dev__pytest-5809.traj.json'
+2026-05-03 13:34:13,176 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-f60950e5 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pytest-dev_1776_pytest-7982:latest sleep 2h
+2026-05-03 13:34:13,283 - minisweagent.environment - INFO - Started container minisweagent-f60950e5 with ID 029a996b76477bc422fe505f3814c7a84b74e97a20807a01be78d4bb0be84362
+2026-05-03 13:45:26,964 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/pytest-dev__pytest-7982/pytest-dev__pytest-7982.traj.json'
+2026-05-03 13:45:26,971 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-3bc58b6d -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-13135:latest sleep 2h
+2026-05-03 13:45:27,087 - minisweagent.environment - INFO - Started container minisweagent-3bc58b6d with ID b43e3736f5c3ef4c764134050f37af1e02d2c5d59850f35da6f9bc1a8abf0f53
+2026-05-03 13:45:46,517 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/scikit-learn__scikit-learn-13135/scikit-learn__scikit-learn-13135.traj.json'
+2026-05-03 13:45:46,540 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-b82e53ea -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-13142:latest sleep 2h
+2026-05-03 13:45:46,668 - minisweagent.environment - INFO - Started container minisweagent-b82e53ea with ID 335a993e43a00bb91115f85b4d733a8770490644479b5279022f73c7a5504658
+2026-05-03 13:46:59,762 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/scikit-learn__scikit-learn-13142/scikit-learn__scikit-learn-13142.traj.json'
+2026-05-03 13:47:11,465 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 13:47:12,975 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 13:47:12,977 - minisweagent - INFO - Skipping 29 existing instances
+2026-05-03 13:47:12,977 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 13:47:13,764 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-299d9933 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8595:latest sleep 2h
+2026-05-03 13:47:13,878 - minisweagent.environment - INFO - Started container minisweagent-299d9933 with ID 5689889ad15e61d621450cbb8895631c180c7bf0c4f44c40c61c8af0d9c625ad
+2026-05-03 13:47:59,237 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sphinx-doc__sphinx-8595/sphinx-doc__sphinx-8595.traj.json'
+2026-05-03 13:47:59,252 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-17f7ac55 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8721:latest sleep 2h
+2026-05-03 13:47:59,377 - minisweagent.environment - INFO - Started container minisweagent-17f7ac55 with ID 72391ab857a5cbbba121ab1458112348f3b4aa0cad747a89f4319527a1b7111b
+2026-05-03 13:48:38,881 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sphinx-doc__sphinx-8721/sphinx-doc__sphinx-8721.traj.json'
+2026-05-03 13:48:38,935 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-2ce0114c -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-9229:latest sleep 2h
+2026-05-03 13:48:39,092 - minisweagent.environment - INFO - Started container minisweagent-2ce0114c with ID c58d02f1a6f3e1cb4dc97a2500692a4cec0fd8593cc58ef386391ca80e2a67ec
+2026-05-03 13:49:44,871 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sphinx-doc__sphinx-9229/sphinx-doc__sphinx-9229.traj.json'
+2026-05-03 13:49:44,960 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-2a631643 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-13615:latest sleep 2h
+2026-05-03 13:49:45,070 - minisweagent.environment - INFO - Started container minisweagent-2a631643 with ID 835963c75d0f9b64ab0021b424daf36fd3bce4302786b448fd6b9d604e38fb82
+2026-05-03 13:50:46,692 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-13615/sympy__sympy-13615.traj.json'
+2026-05-03 13:50:46,772 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-35295a24 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-13852:latest sleep 2h
+2026-05-03 13:50:46,870 - minisweagent.environment - INFO - Started container minisweagent-35295a24 with ID 2ea0194ff415f393c4cc3df7db0dfdba381e39911084222efe07de49647f51c7
+2026-05-03 13:51:15,017 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-13852/sympy__sympy-13852.traj.json'
+2026-05-03 13:51:50,797 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 13:51:52,188 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-05-03 13:51:52,208 - minisweagent - INFO - Skipping 34 existing instances
+2026-05-03 13:51:52,208 - minisweagent - INFO - Running on 5 instances...
+2026-05-03 13:51:53,049 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-70e4b5ed -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-14248:latest sleep 2h
+2026-05-03 13:51:53,178 - minisweagent.environment - INFO - Started container minisweagent-70e4b5ed with ID 5b342b32ad5ef09de67055968edfd37ab2414e0722924990770c88d0bb9f3364
+2026-05-03 14:57:42,224 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-14248/sympy__sympy-14248.traj.json'
+2026-05-03 14:57:42,310 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-b7853940 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-15017:latest sleep 2h
+2026-05-03 14:57:42,445 - minisweagent.environment - INFO - Started container minisweagent-b7853940 with ID 1ba8e0f7af6b70c9d75cde40d81471d50555eb483689c1ff5955b0fe261b6a82
+2026-05-03 14:58:21,431 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-15017/sympy__sympy-15017.traj.json'
+2026-05-03 14:58:21,519 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-215cbf35 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-16792:latest sleep 2h
+2026-05-03 14:58:21,612 - minisweagent.environment - INFO - Started container minisweagent-215cbf35 with ID 75fc387d601e9a837de3150286aad5db6dcb2a30c3c4fe6c8d1f3cb632d01714
+2026-05-03 15:44:54,424 - minisweagent - INFO - Cancelling all pending jobs. Press ^C again to exit immediately.
+2026-05-03 15:45:09,284 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 15:45:10,357 - minisweagent - INFO - Instance slice: 40 -> 2 instances
+2026-05-03 15:45:10,376 - minisweagent - INFO - Skipping 36 existing instances
+2026-05-03 15:45:10,376 - minisweagent - INFO - Running on 2 instances...
+2026-05-03 15:45:11,252 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-51870da1 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-17139:latest sleep 2h
+2026-05-03 15:45:11,406 - minisweagent.environment - INFO - Started container minisweagent-51870da1 with ID ca969e0b38d4fd75f399071a96ae72dc985cc53691761cbfa39fd7391f08ebde
+2026-05-03 15:54:52,226 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-17139/sympy__sympy-17139.traj.json'
+2026-05-03 15:54:52,314 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-9a48b7b0 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-19346:latest sleep 2h
+2026-05-03 15:54:52,428 - minisweagent.environment - INFO - Started container minisweagent-9a48b7b0 with ID 65a68de82c369f089fa227c54581a99c4b38b62844e7be72445a64073101f759
+2026-05-03 15:56:08,164 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-19346/sympy__sympy-19346.traj.json'
+2026-05-03 16:03:35,121 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 16:03:36,245 - minisweagent - INFO - Instance slice: 40 -> 1 instances
+2026-05-03 16:03:36,266 - minisweagent - INFO - Skipping 38 existing instances
+2026-05-03 16:03:36,266 - minisweagent - INFO - Running on 1 instances...
+2026-05-03 16:03:37,020 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-f48d74c8 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16560:latest sleep 2h
+2026-05-03 16:03:37,183 - minisweagent.environment - INFO - Started container minisweagent-f48d74c8 with ID 2dd884282715960b1806edc9a7dafc917267e952a0d7843b0fc84f5517521b71
+2026-05-03 16:04:12,495 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/django__django-16560/django__django-16560.traj.json'
+2026-05-03 16:04:31,738 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-05-03 16:04:33,038 - minisweagent - INFO - Instance slice: 40 -> 1 instances
+2026-05-03 16:04:33,056 - minisweagent - INFO - Skipping 39 existing instances
+2026-05-03 16:04:33,056 - minisweagent - INFO - Running on 1 instances...
+2026-05-03 16:04:33,944 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-10d2b8dc -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-16792:latest sleep 2h
+2026-05-03 16:04:34,096 - minisweagent.environment - INFO - Started container minisweagent-10d2b8dc with ID 7b15f520de4d34b16fc44e9a79fdd6e70e36ad98fd4588ad2433764aa66e0bd4
+2026-05-03 17:57:51,758 - minisweagent - INFO - Saved trajectory to 'deliverables_final/verified_40_baseline/generation/sympy__sympy-16792/sympy__sympy-16792.traj.json'
