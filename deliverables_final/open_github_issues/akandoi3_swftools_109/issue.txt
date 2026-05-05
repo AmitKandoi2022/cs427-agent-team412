@@ -1,0 +1,14 @@
+Issue description:
+
+This issue reports a segmentation fault occurring in the swf_GetBits function (lib/rfxswf.c:213) when running swfdump with a malformed input. The issue includes:
+•	A minimal command-line reproduction (./src/swfdump -D @@)
+•	AddressSanitizer crash trace pointing to invalid memory access
+•	A proof of concept (POC) input file triggering the crash
+The issue represents a real-world C memory safety bug, making it significantly more challenging than curated SWE bench instances.
+reproduction steps
+stack trace
+
+Stack trace:
+
+RetryError: RetryError[<Future at 0x751f8e072990 state=finished raised ServiceUnavailableError>]
+(minisweagent) amitk@AKsWorkstation:/mnt/e/UIUC/CS427/Team/4thCreditHourLLM/code/main/cs427-agent-team412$

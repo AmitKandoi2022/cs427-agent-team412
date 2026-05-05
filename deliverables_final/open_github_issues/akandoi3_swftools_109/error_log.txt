@@ -1,0 +1,3 @@
+ServiceUnavailableError: Gemini API unavailable
+Retry attempts exhausted via LiteLLM
+Agent execution aborted
