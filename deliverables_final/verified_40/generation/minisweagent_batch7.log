@@ -1,0 +1,18 @@
+2026-04-15 18:47:49,336 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-04-15 18:47:50,762 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-04-15 18:47:50,763 - minisweagent - INFO - Running on 5 instances...
+2026-04-15 18:47:52,191 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-e7935f98 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8595:latest sleep 2h
+2026-04-15 18:48:24,551 - minisweagent.environment - INFO - Started container minisweagent-e7935f98 with ID 2deba48d55c2f6fa12e031d720db73a5846c23bb1b861eb252a1a5e3146c86f8
+2026-04-15 18:49:22,227 - minisweagent - INFO - Saved trajectory to 'test_batch7/sphinx-doc__sphinx-8595/sphinx-doc__sphinx-8595.traj.json'
+2026-04-15 18:49:22,231 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-d97aecda -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-8721:latest sleep 2h
+2026-04-15 18:49:27,739 - minisweagent.environment - INFO - Started container minisweagent-d97aecda with ID 62fc4cad9cae32079e0632a7439437f8de84780a4f093e5ca07e4403364b1a16
+2026-04-15 18:49:46,681 - minisweagent - INFO - Saved trajectory to 'test_batch7/sphinx-doc__sphinx-8721/sphinx-doc__sphinx-8721.traj.json'
+2026-04-15 18:49:46,685 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-0fd3092a -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sphinx-doc_1776_sphinx-9229:latest sleep 2h
+2026-04-15 18:50:20,270 - minisweagent.environment - INFO - Started container minisweagent-0fd3092a with ID efe3e92224f6b12d15862f8c6cc0407c0bf8afb05db552989f74961d15f698a3
+2026-04-15 18:55:57,783 - minisweagent - INFO - Saved trajectory to 'test_batch7/sphinx-doc__sphinx-9229/sphinx-doc__sphinx-9229.traj.json'
+2026-04-15 18:55:57,787 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-381c7d17 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-13615:latest sleep 2h
+2026-04-15 18:56:04,539 - minisweagent.environment - INFO - Started container minisweagent-381c7d17 with ID 89cee0f66a9762f21f6790b6a178d2a26fd4b3976d2272c7475efc71d61db3a5
+2026-04-15 18:56:54,171 - minisweagent - INFO - Saved trajectory to 'test_batch7/sympy__sympy-13615/sympy__sympy-13615.traj.json'
+2026-04-15 18:56:54,175 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-756b61a0 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-13852:latest sleep 2h
+2026-04-15 18:57:00,183 - minisweagent.environment - INFO - Started container minisweagent-756b61a0 with ID b5e4709104159061552e0421ea082cfc2f8275737207d98463345f36a38ad70d
+2026-04-15 18:58:19,687 - minisweagent - INFO - Saved trajectory to 'test_batch7/sympy__sympy-13852/sympy__sympy-13852.traj.json'
