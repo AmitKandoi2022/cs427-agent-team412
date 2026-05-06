@@ -1,0 +1,18 @@
+2026-04-15 18:18:45,951 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-04-15 18:18:47,439 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-04-15 18:18:47,439 - minisweagent - INFO - Running on 5 instances...
+2026-04-15 18:18:48,645 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-b79aff72 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16642:latest sleep 2h
+2026-04-15 18:18:59,777 - minisweagent.environment - INFO - Started container minisweagent-b79aff72 with ID 7739291d45e4a16df4d945e5f40ab23ad299abc8a4025f7158d570adadd8d4e1
+2026-04-15 18:20:10,674 - minisweagent - INFO - Saved trajectory to 'test_batch5/django__django-16642/django__django-16642.traj.json'
+2026-04-15 18:20:10,678 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-78603041 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.django_1776_django-16661:latest sleep 2h
+2026-04-15 18:20:10,984 - minisweagent.environment - INFO - Started container minisweagent-78603041 with ID e960a08ba9cb5b0c6ae852595c56dc3c22168410dbfa97315d9e308e907cecad
+2026-04-15 18:22:18,623 - minisweagent - INFO - Saved trajectory to 'test_batch5/django__django-16661/django__django-16661.traj.json'
+2026-04-15 18:22:18,628 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-24ee77e7 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.psf_1776_requests-2317:latest sleep 2h
+2026-04-15 18:22:47,484 - minisweagent.environment - INFO - Started container minisweagent-24ee77e7 with ID b731a33818bf772ab04a2614d4c080c5ad800e1ea7b5e971d3061ddafffa9701
+2026-04-15 18:23:30,286 - minisweagent - INFO - Saved trajectory to 'test_batch5/psf__requests-2317/psf__requests-2317.traj.json'
+2026-04-15 18:23:30,291 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-e0e3ab39 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pydata_1776_xarray-6461:latest sleep 2h
+2026-04-15 18:25:25,194 - minisweagent.environment - INFO - Started container minisweagent-e0e3ab39 with ID 40110a88284c9eb951d2173156a987d01b10e22910c020d938d91c64e2c30514
+2026-04-15 18:27:14,166 - minisweagent - INFO - Saved trajectory to 'test_batch5/pydata__xarray-6461/pydata__xarray-6461.traj.json'
+2026-04-15 18:27:14,172 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-bdffbc69 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.pydata_1776_xarray-6992:latest sleep 2h
+2026-04-15 18:28:59,968 - minisweagent.environment - INFO - Started container minisweagent-bdffbc69 with ID f156414bfae23c0c31cb98b53b231b0d36d3a8462656fc5d4581568b5f9a29b1
+2026-04-15 18:29:17,897 - minisweagent - INFO - Saved trajectory to 'test_batch5/pydata__xarray-6992/pydata__xarray-6992.traj.json'

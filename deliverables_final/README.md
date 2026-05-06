@@ -52,3 +52,4 @@ This exceeds the required threshold of 21 resolved tasks.
 
 - All generation traces are included so results can be inspected or reproduced.
 - Since the benchmark was executed in batches due to API rate limits, the included log and exit status files correspond to a representative batch run.
+- Renamed batch log files to minisweagent_batch*.log to distinguish logs from different verified-40 batch runs.

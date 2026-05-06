@@ -1,0 +1,18 @@
+2026-04-15 19:31:17,202 - minisweagent - INFO - Loading verified-40 instances (using split test)...
+2026-04-15 19:31:17,937 - minisweagent - INFO - Instance slice: 40 -> 5 instances
+2026-04-15 19:31:17,938 - minisweagent - INFO - Running on 5 instances...
+2026-04-15 19:31:19,443 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-8e65758a -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-14248:latest sleep 2h
+2026-04-15 19:31:19,767 - minisweagent.environment - INFO - Started container minisweagent-8e65758a with ID 7c171e80c8b0aabe1f7c2724f3df6f3672d3d3d17c4e14083eb043a558240a01
+2026-04-15 19:52:53,846 - minisweagent - INFO - Saved trajectory to 'test_batch8/sympy__sympy-14248/sympy__sympy-14248.traj.json'
+2026-04-15 19:52:53,849 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-fc1845be -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-15017:latest sleep 2h
+2026-04-15 19:53:01,634 - minisweagent.environment - INFO - Started container minisweagent-fc1845be with ID bfdd6ad3310a8097428f0eb6ecb811e394297216f4894352d7448fa972c57d3b
+2026-04-15 19:54:48,064 - minisweagent - INFO - Saved trajectory to 'test_batch8/sympy__sympy-15017/sympy__sympy-15017.traj.json'
+2026-04-15 19:54:48,067 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-e0dabf1b -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-16792:latest sleep 2h
+2026-04-15 19:54:48,394 - minisweagent.environment - INFO - Started container minisweagent-e0dabf1b with ID b674a6342bce4ca739cf39a72cbae0d0bb9ebff039e4cfd9f146dec5a13522fd
+2026-04-15 19:57:36,523 - minisweagent - INFO - Saved trajectory to 'test_batch8/sympy__sympy-16792/sympy__sympy-16792.traj.json'
+2026-04-15 19:57:36,526 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-4dfb078f -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-17139:latest sleep 2h
+2026-04-15 19:57:43,619 - minisweagent.environment - INFO - Started container minisweagent-4dfb078f with ID 74c4461f9583132c154ce08b90c632ec08efe3e464415e0ae639563f0e2702e9
+2026-04-15 19:58:20,045 - minisweagent - INFO - Saved trajectory to 'test_batch8/sympy__sympy-17139/sympy__sympy-17139.traj.json'
+2026-04-15 19:58:20,050 - minisweagent.environment - DEBUG - Starting container with command: docker run -d --name minisweagent-06fdaed1 -w /testbed --rm docker.io/swebench/sweb.eval.x86_64.sympy_1776_sympy-19346:latest sleep 2h
+2026-04-15 19:58:27,625 - minisweagent.environment - INFO - Started container minisweagent-06fdaed1 with ID cf5b6e21fe8e523aa0a9a736925b1e3b9ae7e9624874ddfc2e243824c4ed1f17
+2026-04-15 20:00:23,177 - minisweagent - INFO - Saved trajectory to 'test_batch8/sympy__sympy-19346/sympy__sympy-19346.traj.json'
